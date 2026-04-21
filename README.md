@@ -198,7 +198,7 @@ A single, user-friendly JSON file at `server/cabal-config.json` lets server owne
 
 | Field | Effect |
 |-------|--------|
-| `babyCreeper.spawnChance` | Probability a naturally-spawned creeper becomes a baby (range `0.0`–`1.0`). Set to `0.0` to disable baby creepers entirely. |
+| `babyCreeper.spawnChance` | Probability a creeper becomes a baby when spawned through `NATURAL`, `SPAWN_ITEM_USE`, or `SPAWN_EGG` (range `0.0`–`1.0`). Set to `0.0` to disable baby creepers entirely. |
 | `evoker.enabled` | Master switch for the evoker boss system. `false` disables boss scheduling/loot, the elemental fire/lightning arrows (and their `/givearrow`/`/giveevokereye` commands), and Evoker's Wing crafting/speed/kinetic-immunity hooks. |
 | `server.name` | Plain server name used in chat and as the default HUD title. |
 | `server.colorCodes` | Formatting codes prefixed to `server.name`. Supports `&`-style shortcodes (e.g. `&b&l` for bold aqua) or raw `§` codes. |

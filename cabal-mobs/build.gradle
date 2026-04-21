@@ -31,3 +31,9 @@ dependencies {
 tasks.withType(JavaCompile).configureEach {
     options.release = 21
 }
+
+tasks.named("processResources") {
+    from(rootProject.file("../server/cabal-config.json")) {
+        rename { "cabal-config-default.json" }
+    }
+}

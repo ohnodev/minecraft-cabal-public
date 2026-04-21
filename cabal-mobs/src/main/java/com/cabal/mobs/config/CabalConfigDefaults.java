@@ -1,44 +1,26 @@
 package com.cabal.mobs.config;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+
 /**
  * Canonical default {@code cabal-config.json} written on first run. Includes the full set of fields
  * consumed across Cabal mods (mobs, elytra, claim) so server owners can see everything they can tune.
  */
 final class CabalConfigDefaults {
+    private static final String TEMPLATE_RESOURCE = "/cabal-config-default.json";
+
     private CabalConfigDefaults() {}
 
     static String defaultJson() {
-        return """
-                {
-                  "_comment": "Cabal SMP user config. Set babyCreeper.spawnChance to 0.0 to disable baby creepers. Set evoker.enabled to false to disable the evoker boss + its eyes, arrows, and wing systems. HUD colors use Minecraft formatting codes; &-prefixed codes are translated automatically (e.g. &b&l).",
-                  "babyCreeper": {
-                    "spawnChance": 0.30
-                  },
-                  "evoker": {
-                    "enabled": true
-                  },
-                  "server": {
-                    "name": "Cabal SMP",
-                    "colorCodes": "&b&l"
-                  },
-                  "hud": {
-                    "titleOverride": "&b&lC&3&lA&9&lB&b&lA&3&lL &9&lS&3&lM&b&lP",
-                    "icons": {
-                      "money": "$",
-                      "kills": "\u2726",
-                      "deaths": "\u2620",
-                      "playtime": "\u231B",
-                      "ping": "\u26A1"
-                    },
-                    "colors": {
-                      "money": "a",
-                      "kills": "c",
-                      "deaths": "4",
-                      "playtime": "b",
-                      "ping": "e"
-                    }
-                  }
-                }
-                """;
+        try (InputStream in = CabalConfigDefaults.class.getResourceAsStream(TEMPLATE_RESOURCE)) {
+            if (in == null) {
+                throw new IllegalStateException("Missing default config resource " + TEMPLATE_RESOURCE);
+            }
+            return new String(in.readAllBytes(), StandardCharsets.UTF_8);
+        } catch (IOException e) {
+            throw new IllegalStateException("Failed to read default config resource " + TEMPLATE_RESOURCE, e);
+        }
     }
 }

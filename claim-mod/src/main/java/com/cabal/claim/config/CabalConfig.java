@@ -99,7 +99,7 @@ public final class CabalConfig {
     private static CabalConfig fromRoot(Root root) {
         String name = DEFAULT_SERVER_NAME;
         String colorCodes = DEFAULT_SERVER_COLOR;
-        String titleOverride = DEFAULT_HUD_TITLE;
+        String titleOverride = null;
 
         if (root != null) {
             if (root.server != null) {
@@ -135,10 +135,13 @@ public final class CabalConfig {
             if (root.hud.colors != null) {
                 for (Map.Entry<String, String> entry : root.hud.colors.entrySet()) {
                     if (entry.getValue() != null && !entry.getValue().isBlank()) {
-                        // Allow users to write "&a" or just "a"; normalize to single code char.
-                        String v = entry.getValue();
+                        // Allow users to write "&a" or just "a"; normalize to one code char.
+                        String v = entry.getValue().trim();
                         if (v.startsWith("&") || v.startsWith("\u00A7")) v = v.substring(1);
-                        colors.put(entry.getKey(), v);
+                        if (!v.isEmpty()) {
+                            v = v.substring(0, 1);
+                            colors.put(entry.getKey(), v);
+                        }
                     }
                 }
             }
