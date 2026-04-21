@@ -332,6 +332,37 @@ Edit `/root/minecraft-cabal/server/codeofconduct/en_us.txt` to change the text s
 
 ## SMP Dashboard (website + API)
 
+### At a glance (how it all fits together)
+
+- **Minecraft server** writes live state to disk (`server/`): world data, claims, spawn/protection, and economy tables.
+- **API (`api/`)** reads that state and serves JSON on `:4866` (server status, content, map payload).
+- **Web frontend (`web/`)** is a Vite + React SPA that calls the API (via `VITE_API_BASE_URL`) and renders the public dashboard/map.
+- **Map generation** is a two-step model: biome cache is precomputed offline (`npm run generate-map-cache`), while claims/spawn are merged live by the API.
+
+### Quick start / restart commands (humans first)
+
+```bash
+# Minecraft game server
+sudo systemctl start minecraft-cabal
+sudo systemctl restart minecraft-cabal
+sudo systemctl status minecraft-cabal
+sudo journalctl -u minecraft-cabal -f
+
+# API (choose ONE process manager: systemd OR PM2)
+sudo systemctl start cabal-smp-api
+sudo systemctl restart cabal-smp-api
+sudo systemctl status cabal-smp-api
+sudo journalctl -u cabal-smp-api -f
+
+# PM2 helper (includes API-focused workflows)
+cd /root/minecraft-cabal
+./pm2-manager.sh start
+./pm2-manager.sh restart api
+./pm2-manager.sh status
+```
+
+The web app lives in `web/` and is included in this repo so anyone can run it locally or deploy it directly.
+
 ### API (`api/`)
 
 A Fastify TypeScript service on **port 4866** that reads game state from disk and exposes it as JSON:
