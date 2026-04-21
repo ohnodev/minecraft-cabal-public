@@ -2,6 +2,7 @@ package com.cabal.elytra.wing;
 
 import com.cabal.elytra.CabalElytraMod;
 import com.cabal.elytra.ElytraBalanceConfig;
+import com.cabal.elytra.config.CabalConfig;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.inventory.CraftingContainer;
 import net.minecraft.world.item.ItemStack;
@@ -16,6 +17,7 @@ public final class EvokersWingCraftingHandler {
     private EvokersWingCraftingHandler() {}
 
     public static ItemStack tryMatch(CraftingContainer container) {
+        if (!CabalConfig.get().evokerEnabled()) return ItemStack.EMPTY;
         int eyeCount = 0;
         ItemStack elytraSlot = ItemStack.EMPTY;
         ItemStack wingSlot = ItemStack.EMPTY;

@@ -1,0 +1,44 @@
+package com.cabal.mobs.config;
+
+/**
+ * Canonical default {@code cabal-config.json} written on first run. Includes the full set of fields
+ * consumed across Cabal mods (mobs, elytra, claim) so server owners can see everything they can tune.
+ */
+final class CabalConfigDefaults {
+    private CabalConfigDefaults() {}
+
+    static String defaultJson() {
+        return """
+                {
+                  "_comment": "Cabal SMP user config. Set babyCreeper.spawnChance to 0.0 to disable baby creepers. Set evoker.enabled to false to disable the evoker boss + its eyes, arrows, and wing systems. HUD colors use Minecraft formatting codes; &-prefixed codes are translated automatically (e.g. &b&l).",
+                  "babyCreeper": {
+                    "spawnChance": 0.30
+                  },
+                  "evoker": {
+                    "enabled": true
+                  },
+                  "server": {
+                    "name": "Cabal SMP",
+                    "colorCodes": "&b&l"
+                  },
+                  "hud": {
+                    "titleOverride": "&b&lC&3&lA&9&lB&b&lA&3&lL &9&lS&3&lM&b&lP",
+                    "icons": {
+                      "money": "$",
+                      "kills": "\u2726",
+                      "deaths": "\u2620",
+                      "playtime": "\u231B",
+                      "ping": "\u26A1"
+                    },
+                    "colors": {
+                      "money": "a",
+                      "kills": "c",
+                      "deaths": "4",
+                      "playtime": "b",
+                      "ping": "e"
+                    }
+                  }
+                }
+                """;
+    }
+}

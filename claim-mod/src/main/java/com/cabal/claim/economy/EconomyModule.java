@@ -1,5 +1,6 @@
 package com.cabal.claim.economy;
 
+import com.cabal.claim.config.CabalConfig;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.damagesource.DamageSource;
@@ -14,6 +15,7 @@ import java.util.stream.Collectors;
 
 public final class EconomyModule {
     private final EconomyConfig config;
+    private final CabalConfig cabalConfig;
     private final EconomyDatabase db;
     private final EconomyDbWriter dbWriter;
     private final EconomyService economyService;
@@ -34,6 +36,7 @@ public final class EconomyModule {
 
     public EconomyModule(Path serverDir) {
         this.config = EconomyConfig.loadOrCreate(serverDir);
+        this.cabalConfig = CabalConfig.loadOrDefault(serverDir);
         this.db = new EconomyDatabase(serverDir);
         this.db.migrate();
         this.dbWriter = new EconomyDbWriter();
@@ -46,7 +49,7 @@ public final class EconomyModule {
         this.auctionService = new AuctionService(db, economyService, config);
         this.timeRewardService = new TimeRewardService(economyService, config);
         this.playerLocationSampler = new PlayerLocationSampler(serverDir);
-        this.hudService = new HudService(economyService, playerStatsService);
+        this.hudService = new HudService(economyService, playerStatsService, cabalConfig);
         this.economyCommands = new EconomyCommands(economyService, db, hudService, timeRewardService, auctionService, config);
         this.auctionCommand = new AuctionCommand(auctionService);
         this.inventoryHistoryCommand = new InventoryHistoryCommand(inventoryHistoryService);
@@ -56,6 +59,10 @@ public final class EconomyModule {
 
     public EconomyConfig config() {
         return config;
+    }
+
+    public CabalConfig cabalConfig() {
+        return cabalConfig;
     }
 
     public EconomyService economyService() {

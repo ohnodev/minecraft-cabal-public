@@ -2,6 +2,7 @@ package com.cabal.mobs.mixin;
 
 import com.cabal.mobs.BabyCreeperHelper;
 import com.cabal.mobs.CabalMobsMod;
+import com.cabal.mobs.config.CabalConfig;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.Mob;
@@ -28,7 +29,9 @@ public abstract class CreeperFinalizeSpawnMixin {
         // Allow both natural spawns and spawn-egg placement to roll baby chance.
         String reason = spawnReason.name();
         if (!"NATURAL".equals(reason) && !"SPAWN_ITEM_USE".equals(reason) && !"SPAWN_EGG".equals(reason)) return;
-        if (level.getRandom().nextFloat() >= CabalMobsMod.BABY_CREEPER_CHANCE) return;
+        float chance = CabalConfig.get().babyCreeperSpawnChance();
+        if (chance <= 0.0f) return;
+        if (level.getRandom().nextFloat() >= chance) return;
 
         BabyCreeperHelper.applyBabyAttributes(creeper);
         CabalMobsMod.LOGGER.debug("[CabalMobs] Spawned baby creeper at [{}, {}, {}]",

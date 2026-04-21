@@ -1,5 +1,6 @@
 package com.cabal.elytra.mixin;
 
+import com.cabal.elytra.config.CabalConfig;
 import com.cabal.elytra.wing.EvokersWingHelper;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
@@ -39,6 +40,7 @@ public abstract class EvokersWingGlideMixin {
             float damage,
             CallbackInfoReturnable<Boolean> cir
     ) {
+        if (!CabalConfig.get().evokerEnabled()) return;
         LivingEntity self = (LivingEntity) (Object) this;
         if (!source.is(DamageTypes.FLY_INTO_WALL)) return;
         if (!self.isFallFlying()) return;
@@ -64,6 +66,11 @@ public abstract class EvokersWingGlideMixin {
     private void cabal$evokersWingSpeedBonus(CallbackInfo ci) {
         LivingEntity self = (LivingEntity) (Object) this;
         if (self.level().isClientSide()) return;
+
+        if (!CabalConfig.get().evokerEnabled()) {
+            cabal$clearWingSpeed(self);
+            return;
+        }
 
         if (!self.isFallFlying()) {
             cabal$clearWingSpeed(self);
