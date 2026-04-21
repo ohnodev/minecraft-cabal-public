@@ -275,6 +275,7 @@ The server uses **Fabric Loader 0.19.2** with **Fabric API 0.141.3+1.21.11**. Th
 | Floodgate-Fabric | 2.2.6-b60 | Allows Bedrock players to join without a Java account |
 | cabal-claim | 1.3.3 | Land claims (`/claim`), `/home` teleport, land trust, auction/economy |
 | cabal-mobs | 1.0.1 | Baby creepers and the minute-gated evoker boss |
+| cabal-elytra | 1.0.0 | Evoker's Wing progression, crafting hooks, and admin commands |
 
 **Protocol policy:**
 - Native **1.21.11** Java clients join without any translation.
@@ -304,7 +305,7 @@ Keeps the 7 newest `world-backup-*.tar.gz` files. Backs up `world/` and, if pres
 2. From the [version manifest](https://launchermeta.mojang.com/mc/game/version_manifest_v2.json), open your version's JSON and copy the `downloads.server.url` for `server.jar`.
 3. Replace `/root/minecraft-cabal/server/server.jar` with that file.
 4. Re-run the Fabric installer for the new version: `java -jar fabric-installer.jar server -mcversion <version> -dir /root/minecraft-cabal/server`
-5. Rebuild the claim mod if the Minecraft version changes (update `build.gradle` dependency version).
+5. Rebuild the Cabal mods (`claim`, `mobs`, `elytra`) if the Minecraft version changes (update each mod's `build.gradle` dependency version).
 6. Check the version JSON `javaVersion.majorVersion` — if it changes, install that JDK and update `JAVA=` in `scripts/start.sh`.
 7. `sudo systemctl start minecraft-cabal`
 

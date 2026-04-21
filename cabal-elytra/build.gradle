@@ -1,5 +1,5 @@
 plugins {
-    id "net.fabricmc.fabric-loom" version "1.16.1"
+    id "fabric-loom" version "1.14.10"
     id "java"
 }
 
@@ -7,8 +7,11 @@ version = "1.0.0"
 group = "com.cabal.elytra"
 
 java {
-    sourceCompatibility = JavaVersion.VERSION_25
-    targetCompatibility = JavaVersion.VERSION_25
+    sourceCompatibility = JavaVersion.VERSION_21
+    targetCompatibility = JavaVersion.VERSION_21
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
 }
 
 repositories {
@@ -17,13 +20,14 @@ repositories {
 }
 
 dependencies {
-    minecraft "com.mojang:minecraft:26.1.2"
-    implementation "net.fabricmc:fabric-loader:0.19.2"
-    implementation("net.fabricmc.fabric-api:fabric-api:0.146.1+26.1.2") {
+    minecraft "com.mojang:minecraft:1.21.11"
+    mappings loom.officialMojangMappings()
+    modImplementation "net.fabricmc:fabric-loader:0.19.2"
+    modImplementation("net.fabricmc.fabric-api:fabric-api:0.141.3+1.21.11") {
         exclude group: "net.fabricmc.fabric-api", module: "fabric-data-generation-api-v1"
     }
 }
 
 tasks.withType(JavaCompile).configureEach {
-    options.release = 25
+    options.release = 21
 }
