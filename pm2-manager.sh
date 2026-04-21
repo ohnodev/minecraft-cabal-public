@@ -14,10 +14,8 @@ API_DIR="${SCRIPT_DIR}/api"
 CLAIM_MOD_DIR="${SCRIPT_DIR}/claim-mod"
 ECOSYSTEM_FILE="${SCRIPT_DIR}/ecosystem.config.js"
 APP_NAME="cabal-smp-api"
-MC_SERVICE_NAME="minecraft-cabal"
-MC_PORTS_DEFAULT="25566 25575"
-MC_SERVICE_OVERRIDE_DIR="/etc/systemd/system/${MC_SERVICE_NAME}.service.d"
-MC_SERVICE_OVERRIDE_FILE="${MC_SERVICE_OVERRIDE_DIR}/99-grim-runtime-env.conf"
+MC_SERVICE_NAME="minecraft"
+MC_PORTS_DEFAULT="25565 25575"
 MOD_SRC_JAR=""
 MOD_DEST_JAR=""
 MC_LOG_DIR="${SCRIPT_DIR}/server/logs"
@@ -35,45 +33,14 @@ log_err() { echo -e "${RED}[ERROR]${NC} $1"; }
 
 deny_minecraft_control() {
   log_err "This pm2-manager is API-only."
-  log_err "Minecraft server control is disabled here and must be done via systemd."
-  log_err "Use: systemctl <start|stop|restart|status> ${MC_SERVICE_NAME}"
+  log_err "Minecraft server control is disabled here and must be done via Docker Compose."
+  log_err "Use: docker compose <up|stop|restart|ps|logs> ${MC_SERVICE_NAME}"
   return 1
 }
 
 is_port_in_use() {
   local port="$1"
   ss -ltnp "( sport = :${port} )" 2>/dev/null | tail -n +2 | grep -q .
-}
-
-wait_for_service_state() {
-  local unit="$1"
-  local desired="$2"
-  local timeout="${3:-20}"
-  local i
-  for ((i=0; i<timeout; i++)); do
-    local state
-    state="$(systemctl is-active "${unit}" 2>/dev/null || true)"
-    if [ "${state}" = "${desired}" ]; then
-      return 0
-    fi
-    sleep 1
-  done
-  return 1
-}
-
-wait_for_service_stopped() {
-  local unit="$1"
-  local timeout="${2:-20}"
-  local i
-  for ((i=0; i<timeout; i++)); do
-    local state
-    state="$(systemctl is-active "${unit}" 2>/dev/null || true)"
-    if [ "${state}" = "inactive" ] || [ "${state}" = "failed" ]; then
-      return 0
-    fi
-    sleep 1
-  done
-  return 1
 }
 
 ensure_minecraft_ports_free() {
@@ -91,39 +58,6 @@ ensure_minecraft_ports_free() {
     log_err "Refusing to start ${MC_SERVICE_NAME} while required ports are occupied."
     return 1
   fi
-  return 0
-}
-
-ensure_minecraft_service_env() {
-  local desired
-  desired="$(cat <<'EOF'
-[Service]
-Environment=GRIM_MOVEMENT_CAPTURE=0
-Environment=GRIM_DECODE_AUDIT=0
-Environment=GRIM_MOVEMENT_CAPTURE_FILE=/root/minecraft-cabal/server/logs/live-movement-captures.ndjson
-EOF
-)"
-
-  if ! mkdir -p "${MC_SERVICE_OVERRIDE_DIR}" 2>/dev/null; then
-    log_err "Failed to create ${MC_SERVICE_OVERRIDE_DIR}. Run with permissions to manage systemd overrides."
-    return 1
-  fi
-
-  if [ -f "${MC_SERVICE_OVERRIDE_FILE}" ] && [ "$(cat "${MC_SERVICE_OVERRIDE_FILE}")" = "${desired}" ]; then
-    return 0
-  fi
-
-  if ! printf '%s\n' "${desired}" > "${MC_SERVICE_OVERRIDE_FILE}" 2>/dev/null; then
-    log_err "Failed to write ${MC_SERVICE_OVERRIDE_FILE}. Run with permissions to manage systemd overrides."
-    return 1
-  fi
-
-  if ! systemctl daemon-reload >/dev/null 2>&1; then
-    log_err "systemctl daemon-reload failed after writing ${MC_SERVICE_OVERRIDE_FILE}."
-    return 1
-  fi
-
-  log_ok "Applied runtime env override (${MC_SERVICE_OVERRIDE_FILE}): capture=0, decode_audit=0"
   return 0
 }
 
@@ -355,55 +289,21 @@ restart() {
 }
 
 restart_minecraft_service_only() {
-  log_info "Restarting ${MC_SERVICE_NAME}..."
-  if ! command -v systemctl >/dev/null 2>&1; then
-    log_err "systemctl not found; cannot restart ${MC_SERVICE_NAME} from pm2-manager in this environment."
-    log_err "Run your local Minecraft start/stop workflow directly, or install systemd support."
+  log_info "Restarting docker compose service ${MC_SERVICE_NAME}..."
+  if ! command -v docker >/dev/null 2>&1; then
+    log_err "docker not found; cannot restart ${MC_SERVICE_NAME}."
     return 1
   fi
-  if ! ensure_minecraft_service_env; then
+  if ! (cd "${SCRIPT_DIR}" && docker compose restart "${MC_SERVICE_NAME}" >/dev/null 2>&1); then
+    log_err "Failed to restart docker compose service ${MC_SERVICE_NAME}."
+    (cd "${SCRIPT_DIR}" && docker compose ps "${MC_SERVICE_NAME}") || true
     return 1
   fi
-  if systemctl is-active "${MC_SERVICE_NAME}" >/dev/null 2>&1 || systemctl list-unit-files --type=service | grep -q "^${MC_SERVICE_NAME}\\.service"; then
-    systemctl stop "${MC_SERVICE_NAME}" >/dev/null 2>&1 || true
-    if ! wait_for_service_stopped "${MC_SERVICE_NAME}" 45; then
-      log_err "Timed out waiting for ${MC_SERVICE_NAME} to stop."
-      return 1
-    fi
-    if ! ensure_minecraft_ports_free; then
-      return 1
-    fi
-    systemctl reset-failed "${MC_SERVICE_NAME}" >/dev/null 2>&1 || true
-    if ! systemctl start "${MC_SERVICE_NAME}" >/dev/null 2>&1; then
-      log_err "Failed to start ${MC_SERVICE_NAME}."
-      systemctl status "${MC_SERVICE_NAME}" --no-pager || true
-      return 1
-    fi
-    if ! wait_for_service_state "${MC_SERVICE_NAME}" "active" 30; then
-      log_err "Timed out waiting for ${MC_SERVICE_NAME} to become active."
-      systemctl status "${MC_SERVICE_NAME}" --no-pager || true
-      return 1
-    fi
-    if ! decompress_minecraft_logs; then
-      log_warn "Failed to decompress one or more Minecraft logs in ${MC_LOG_DIR}"
-    fi
-    log_ok "Restarted ${MC_SERVICE_NAME}"
-    return 0
+  if ! decompress_minecraft_logs; then
+    log_warn "Failed to decompress one or more Minecraft logs in ${MC_LOG_DIR}"
   fi
-  if [ -x "${SCRIPT_DIR}/scripts/cabal-stack.sh" ]; then
-    log_warn "${MC_SERVICE_NAME}.service not found; falling back to scripts/cabal-stack.sh restart"
-    if "${SCRIPT_DIR}/scripts/cabal-stack.sh" restart >/dev/null 2>&1; then
-      if ! decompress_minecraft_logs; then
-        log_warn "Failed to decompress one or more Minecraft logs in ${MC_LOG_DIR}"
-      fi
-      log_ok "Restarted Minecraft stack via scripts/cabal-stack.sh"
-      return 0
-    fi
-    log_err "Fallback restart via scripts/cabal-stack.sh failed."
-    return 1
-  fi
-  log_err "Minecraft restart failed: service not found and fallback script unavailable."
-  return 1
+  log_ok "Restarted docker compose service ${MC_SERVICE_NAME}"
+  return 0
 }
 
 restart_minecraft() {

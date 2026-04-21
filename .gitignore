@@ -113,4 +113,6 @@ logs/*.log.gz
 logs/*.gz
 !logs/.gitkeep
 server/economy.db
+server/economy.db-shm
+server/economy.db-wal
 server/config/GrimAC/

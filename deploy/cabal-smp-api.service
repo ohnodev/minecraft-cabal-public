@@ -1,6 +1,6 @@
 [Unit]
 Description=Cabal SMP API server
-After=network.target minecraft-cabal.service
+After=network.target
 
 [Service]
 Type=simple
@@ -12,7 +12,7 @@ RestartSec=5
 Environment=API_HOST=127.0.0.1
 Environment=API_PORT=4866
 Environment=MC_HOST=127.0.0.1
-Environment=MC_PORT=25566
+Environment=MC_PORT=25565
 Environment=MC_SERVER_DIR=/root/minecraft-cabal/server
 Environment=CORS_ORIGINS=http://localhost:5173,http://localhost:4173,https://smp.thecabal.app,http://smp.thecabal.app
 

@@ -1,7 +1,0 @@
-[Unit]
-Description=Cabal SMP — Minecraft Java server
-Requires=minecraft-cabal.service
-After=network.target
-
-[Install]
-WantedBy=multi-user.target

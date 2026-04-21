@@ -30,7 +30,7 @@ module.exports = {
         API_HOST: process.env.API_HOST || "127.0.0.1",
         API_PORT: process.env.API_PORT || "4866",
         MC_HOST: process.env.MC_HOST || "127.0.0.1",
-        MC_PORT: process.env.MC_PORT || "25566",
+        MC_PORT: process.env.MC_PORT || "25565",
         MC_SERVER_DIR: process.env.MC_SERVER_DIR || path.join(root, "server"),
         CORS_ORIGINS: process.env.CORS_ORIGINS || DEFAULT_CORS,
       },

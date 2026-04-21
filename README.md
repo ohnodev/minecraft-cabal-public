@@ -6,44 +6,36 @@
 **Connect (Java):** `minecraft.thecabal.app` or `157.230.189.203` — port **25565** (default).  
 **Connect (Bedrock):** same hostname, UDP port **19132** — served in-process by Geyser-Fabric; Floodgate-Fabric lets Bedrock players skip a Java account.
 
-**How traffic flows:** Nginx listens on **0.0.0.0:25565** (TCP `stream`) and forwards to the game on **127.0.0.1:25566** so only one process owns the public Java game port. Bedrock traffic (UDP **19132**) is delivered directly to the Minecraft process (Geyser listens on the JVM), so it does **not** go through nginx. You still must expose/open **19132/udp** at every network layer (Docker port publishing, host firewall, cloud/VPS firewall/security group); otherwise Bedrock clients will time out even when Java clients connect fine.
+**How traffic flows:** Docker publishes Minecraft Java on **0.0.0.0:25565/tcp** and Bedrock on **0.0.0.0:19132/udp** from the `minecraft` service in `docker-compose.yml`. Geyser-Fabric and Floodgate run inside the same JVM/mod stack as Java. You still must expose/open **25565/tcp** and **19132/udp** at every network layer (Docker publishing, host firewall, cloud/VPS firewall/security group), or clients will time out.
 
 Players connect with a **normal vanilla 1.21.11 client** (Java) — no mods needed on the client side. Modern **1.21.x clients** (1.21.x ≠ 1.21.11) are accepted through the Via translation stack (ViaFabric + ViaVersion + ViaBackwards). **Bedrock** clients connect through the Geyser + Floodgate mod pair running inside the Fabric server.
 
 ## Quick commands
 
 ```bash
-sudo systemctl start minecraft-cabal
-sudo systemctl stop minecraft-cabal
-sudo systemctl restart minecraft-cabal
-sudo systemctl status minecraft-cabal
-sudo journalctl -u minecraft-cabal -f
-sudo journalctl -u minecraft-cabal -n 200 --no-pager
-```
-
-## Docker (recommended for local dev)
-
-```bash
-git pull origin main
-docker compose up -d --build
+cd /root/minecraft-cabal
+docker compose up -d minecraft
+docker compose restart minecraft
+docker compose stop minecraft
+docker compose ps minecraft
 docker compose logs -f minecraft
+docker compose logs --tail=200 minecraft
 ```
 
-Compose bind-mounts **`./server`** and uses the same **`scripts/start.sh`** entrypoint. For containers, **`MC_BIND_MODE=public`** (set in **`docker-compose.yml`**) makes the server listen on **all interfaces** on **`MC_SERVER_PORT`** (default **25565**) instead of the production loopback + nginx layout. Heap defaults to **4G** in Compose; override with **`MC_MIN_MEM`** / **`MC_MAX_MEM`**. Full options: **[`docker/README.md`](docker/README.md)**.
-
-### systemd install
-
-The repo ships **`deploy/minecraft-cabal.service`** (runs `scripts/start.sh`). The Minecraft unit sets **`MemoryMax=10G`** so the service cgroup cannot exceed ~10G RAM while **`scripts/start.sh`** uses an **8G** heap (off-heap / metaspace / native need headroom). If you change `MIN_MEM`/`MAX_MEM`, raise `MemoryMax` in the unit and run **`sudo systemctl daemon-reload`** after copying the file to `/etc/systemd/system/`.
-
-`scripts/start.sh` also enforces Cabal runtime networking on every boot when **`MC_BIND_MODE`** is unset or **`loopback`** (`server-ip=127.0.0.1`, `server-port=25566`, `enable-rcon=true`, `rcon.port=25575`) and injects `rcon.password` from the **`RCON_PASSWORD`** environment variable if set, otherwise from **`server/.rcon-password`**. It renders runtime `server/server.properties` from tracked `server/server.properties.template`, so secrets and live overrides do not modify tracked files.
+## Docker runtime (required)
 
 ```bash
 cd /root/minecraft-cabal
-sudo ./deploy/install-systemd-minecraft.sh
-sudo systemctl enable --now minecraft-cabal
+git pull origin main
+docker compose up -d --build minecraft
+docker compose logs -f minecraft
 ```
 
-Optional: **`deploy/cabal-smp.target`** wraps the Minecraft unit (`Requires=minecraft-cabal.service`). After enabling the service for boot, you can run `sudo systemctl start cabal-smp.target` as an alias.
+Compose bind-mounts **`./server`** and uses the same **`scripts/start.sh`** entrypoint. In Docker, **`MC_BIND_MODE=public`** (set in **`docker-compose.yml`**) makes the server listen on **all interfaces** on **`MC_SERVER_PORT`** (default **25565**). Heap defaults to **4G** in Compose; override with **`MC_MIN_MEM`** / **`MC_MAX_MEM`**. Full options: **[`docker/README.md`](docker/README.md)**.
+
+`scripts/start.sh` enforces runtime properties (`enable-rcon=true`, `rcon.port`, `server-port`) and injects `rcon.password` from **`RCON_PASSWORD`** if set, otherwise from **`server/.rcon-password`**. It renders runtime `server/server.properties` from tracked `server/server.properties.template`, so secrets and live overrides do not modify tracked files.
+
+> Runtime policy: **Docker Compose only** for Minecraft on this repo. Do not run `minecraft-cabal.service`.
 
 ## Paths
 
@@ -60,7 +52,7 @@ Optional: **`deploy/cabal-smp.target`** wraps the Minecraft unit (`Requires=mine
 | Claims data | `/root/minecraft-cabal/server/claims.json` |
 | Start script | `/root/minecraft-cabal/scripts/start.sh` |
 | Backups | `/root/minecraft-cabal/backups/` |
-| systemd (MC) unit (in repo) | `deploy/minecraft-cabal.service` → `/etc/systemd/system/minecraft-cabal.service` |
+| Compose runtime | `/root/minecraft-cabal/docker-compose.yml` |
 
 ## Server tuning (distances, heap)
 
@@ -68,9 +60,9 @@ JVM heap is **8 GB** (`scripts/start.sh`). `view-distance` and `simulation-dista
 
 ### Scheduled restart with in-game warnings (RCON)
 
-Use [`scripts/mc-maintenance-restart.sh`](scripts/mc-maintenance-restart.sh) for a **professional maintenance window**: it broadcasts **2 minutes → 1 minute → 30 seconds → 10 seconds** via `say`, then **`save-all`**, **`stop`**, and **`systemctl start`** on unit **`minecraft-cabal`** (override with `MC_SERVICE`). Requires **[mcrcon](https://github.com/Tiiffi/mcrcon)** on the host.
+Use [`scripts/mc-maintenance-restart.sh`](scripts/mc-maintenance-restart.sh) only if you also update that script for Docker. In the current Docker-only runtime, use a manual maintenance restart: broadcast countdown via RCON, run `save-all` + `stop`, then `docker compose up -d minecraft`. Requires **[mcrcon](https://github.com/Tiiffi/mcrcon)** on the host.
 
-**RCON in `server/server.properties.template`:** keep **`enable-rcon=true`** and **`rcon.port=25575`**. The runtime `rcon.password` is injected by `scripts/start.sh` from `server/.rcon-password` at boot. **`server-ip=127.0.0.1`** binds the game (and RCON) to loopback only — not reachable from the internet on that interface. **Restart Minecraft** after changing RCON so it starts listening.
+**RCON in `server/server.properties.template`:** keep **`enable-rcon=true`** and **`rcon.port=25575`**. The runtime `rcon.password` is injected by `scripts/start.sh` from `server/.rcon-password` at boot, and the Docker runtime publishes RCON on the configured host port (default `25575`). **Restart Minecraft** after changing RCON so it starts listening.
 
 **For the script:** put the **same** secret in **`server/.rcon-password`** (one line; gitignored), e.g. copy the value from `rcon.password=`, or export **`RCON_PASSWORD`**. See **`server/.rcon-password.example`**.
 
@@ -220,7 +212,8 @@ cd /root/minecraft-cabal/claim-mod
 export JAVA_HOME=/usr/lib/jvm/java-25-openjdk-amd64
 ./gradlew build
 cp build/libs/cabal-claim-1.3.3.jar ../server/mods/
-sudo systemctl restart minecraft-cabal
+cd /root/minecraft-cabal
+docker compose restart minecraft
 ```
 
 ## Building the mobs mod
@@ -230,7 +223,8 @@ cd /root/minecraft-cabal/cabal-mobs
 export JAVA_HOME=/usr/lib/jvm/java-25-openjdk-amd64
 ./gradlew build
 cp build/libs/cabal-mobs-1.0.1.jar ../server/mods/
-sudo systemctl restart minecraft-cabal
+cd /root/minecraft-cabal
+docker compose restart minecraft
 ```
 
 ### How baby creepers work
@@ -301,22 +295,22 @@ Keeps the 7 newest `world-backup-*.tar.gz` files. Backs up `world/` and, if pres
 
 ## Update to a newer Minecraft release
 
-1. `sudo systemctl stop minecraft-cabal`
+1. `cd /root/minecraft-cabal && docker compose stop minecraft`
 2. From the [version manifest](https://launchermeta.mojang.com/mc/game/version_manifest_v2.json), open your version's JSON and copy the `downloads.server.url` for `server.jar`.
 3. Replace `/root/minecraft-cabal/server/server.jar` with that file.
 4. Re-run the Fabric installer for the new version: `java -jar fabric-installer.jar server -mcversion <version> -dir /root/minecraft-cabal/server`
 5. Rebuild the Cabal mods (`claim`, `mobs`, `elytra`) if the Minecraft version changes (update each mod's `build.gradle` dependency version).
 6. Check the version JSON `javaVersion.majorVersion` — if it changes, install that JDK and update `JAVA=` in `scripts/start.sh`.
-7. `sudo systemctl start minecraft-cabal`
+7. `cd /root/minecraft-cabal && docker compose up -d minecraft`
 
 ## Rollback to pre-Fabric vanilla
 
 A snapshot of the pre-Fabric runtime is stored in `backups/pre-fabric-snapshot-*`. To revert:
 
 1. Stop the server.
-2. Copy `start.sh`, `server.jar`, and `minecraft-cabal.service` back from the snapshot.
+2. Copy `start.sh` and `server.jar` back from the snapshot.
 3. Remove `fabric-server-launch.jar`, `libraries/`, `.fabric/`, and `mods/` from the server directory.
-4. `sudo systemctl daemon-reload && sudo systemctl start minecraft-cabal`
+4. `cd /root/minecraft-cabal && docker compose up -d minecraft`
 
 ## Operator (admin)
 
@@ -344,16 +338,11 @@ Edit `/root/minecraft-cabal/server/codeofconduct/en_us.txt` to change the text s
 
 ```bash
 # Minecraft game server
-sudo systemctl start minecraft-cabal
-sudo systemctl restart minecraft-cabal
-sudo systemctl status minecraft-cabal
-sudo journalctl -u minecraft-cabal -f
-
-# API (choose ONE process manager: systemd OR PM2)
-sudo systemctl start cabal-smp-api
-sudo systemctl restart cabal-smp-api
-sudo systemctl status cabal-smp-api
-sudo journalctl -u cabal-smp-api -f
+cd /root/minecraft-cabal
+docker compose up -d minecraft
+docker compose restart minecraft
+docker compose ps minecraft
+docker compose logs -f minecraft
 
 # PM2 helper (includes API-focused workflows)
 cd /root/minecraft-cabal
@@ -381,10 +370,11 @@ A Fastify TypeScript service on **port 4866** that reads game state from disk an
 # Dev
 cd api && npm run dev
 
-# Production (managed by systemd)
-sudo systemctl start cabal-smp-api
-sudo systemctl status cabal-smp-api
-sudo journalctl -u cabal-smp-api -f
+# Production (managed by PM2)
+cd /root/minecraft-cabal
+./pm2-manager.sh start
+./pm2-manager.sh status
+./pm2-manager.sh logs 100
 ```
 
 CORS allows localhost dev and **`https://smp.thecabal.app`** by default. Override with `CORS_ORIGINS` (comma-separated) in `ecosystem.config.js` / PM2.
@@ -446,13 +436,13 @@ cd /root/minecraft-cabal
 ```
 
 - PM2 process name: `cabal-smp-api`
-- Minecraft service name for helper commands: `minecraft-cabal`
+- Minecraft runtime: Docker Compose service `minecraft`
 - Ecosystem file: `/root/minecraft-cabal/ecosystem.config.js`
 - Log folder: `/root/minecraft-cabal/logs`
 - `restart` clears API logs, rebuilds `api/`, and starts clean
 - `restart api` is API-only (no mod rebuild, no Minecraft restart)
 - `restart api-with-deps` rebuilds/deploys repo mods, restarts Minecraft, then restarts API
-- `restart minecraft` runs `systemctl restart minecraft-cabal`
+- `restart minecraft` is legacy and should be replaced by `docker compose restart minecraft`
 - `restart-all` restarts Minecraft first, then performs a full API restart
 - `init` ensures ecosystem config exists and configures `pm2-logrotate`
 
@@ -477,4 +467,4 @@ Commands:
 - Auction: `/auction`, `/auction list`, `/auction sell <price>`, `/auction buy <id>`
 - Provenance audit: `/provenance check` (main-hand protected items)
 
-**Do not run `cabal-smp-api.service` (systemd) and PM2 at the same time** — both bind to `:4866`. Prefer PM2 if you already use it; otherwise install `deploy/cabal-smp-api.service` to `/etc/systemd/system/` and `systemctl enable --now cabal-smp-api` (no PM2 entry for this app).
+**API runtime policy:** use PM2 only for `cabal-smp-api` to avoid process-manager conflicts on `:4866`.

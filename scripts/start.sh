@@ -59,19 +59,11 @@ apply_runtime_server_properties() {
 
   cp "${TEMPLATE_PROPERTIES_FILE}" "${RUNTIME_PROPERTIES_FILE}"
 
-  # loopback: production behind nginx TCP proxy (see README).
-  # public: Docker / dev — bind game + RCON on all interfaces (Compose maps host ports).
-  if [[ "${MC_BIND_MODE:-loopback}" == "public" ]]; then
-    set_property "server-ip" "0.0.0.0" "${RUNTIME_PROPERTIES_FILE}"
-    set_property "server-port" "${MC_SERVER_PORT:-25565}" "${RUNTIME_PROPERTIES_FILE}"
-    set_property "enable-rcon" "true" "${RUNTIME_PROPERTIES_FILE}"
-    set_property "rcon.port" "${MC_RCON_PORT:-25575}" "${RUNTIME_PROPERTIES_FILE}"
-  else
-    set_property "server-ip" "127.0.0.1" "${RUNTIME_PROPERTIES_FILE}"
-    set_property "server-port" "25566" "${RUNTIME_PROPERTIES_FILE}"
-    set_property "enable-rcon" "true" "${RUNTIME_PROPERTIES_FILE}"
-    set_property "rcon.port" "25575" "${RUNTIME_PROPERTIES_FILE}"
-  fi
+  # Docker-only runtime: bind game + RCON on all interfaces.
+  set_property "server-ip" "0.0.0.0" "${RUNTIME_PROPERTIES_FILE}"
+  set_property "server-port" "${MC_SERVER_PORT:-25565}" "${RUNTIME_PROPERTIES_FILE}"
+  set_property "enable-rcon" "true" "${RUNTIME_PROPERTIES_FILE}"
+  set_property "rcon.port" "${MC_RCON_PORT:-25575}" "${RUNTIME_PROPERTIES_FILE}"
 
   if grep -q "^enable-rcon=true$" "${RUNTIME_PROPERTIES_FILE}"; then
     local rcon_password=""
