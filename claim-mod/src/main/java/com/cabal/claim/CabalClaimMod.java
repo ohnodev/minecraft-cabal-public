@@ -33,8 +33,7 @@ import java.security.CodeSource;
 
 public class CabalClaimMod implements ModInitializer {
     private static final Logger LOGGER = LoggerFactory.getLogger("CabalEconomy/Bootstrap");
-    private static final String[] WELCOME_LINES = {
-        "\u00a76\u00a7lWelcome to Cabal SMP\u00a7r",
+    private static final String[] STATIC_WELCOME_LINES = {
         "\u00a77Feel free to explore the world.",
         "\u00a7eClaim your land with \u00a7b/claim \u00a7e— a \u00a7f100-block radius \u00a7earound where you stand.",
         "\u00a77More server info: \u00a7bsmp.thecabal.app"
@@ -103,7 +102,9 @@ public class CabalClaimMod implements ModInitializer {
                 if (player == null) {
                     return;
                 }
-                for (String line : WELCOME_LINES) {
+                String welcomeHeader = "\u00a76\u00a7lWelcome to " + economyModule.cabalConfig().serverDisplayName() + "\u00a7r";
+                player.sendSystemMessage(Component.literal(welcomeHeader));
+                for (String line : STATIC_WELCOME_LINES) {
                     player.sendSystemMessage(Component.literal(line));
                 }
                 economyModule.onPlayerJoin(player);

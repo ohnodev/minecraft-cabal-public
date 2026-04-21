@@ -1,5 +1,6 @@
 package com.cabal.claim.economy;
 
+import com.cabal.claim.config.CabalConfig;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.numbers.BlankFormat;
 import net.minecraft.network.protocol.game.ClientboundSetDisplayObjectivePacket;
@@ -37,13 +38,13 @@ import java.util.concurrent.ThreadLocalRandom;
 public final class HudService {
     private static final Logger LOGGER = LoggerFactory.getLogger("CabalEconomy/HudService");
     private static final int LINE_COUNT = 5;
-    private static final String TITLE = "\u00A7b\u00A7lC\u00A73\u00A7lA\u00A79\u00A7lB\u00A7b\u00A7lA\u00A73\u00A7lL \u00A79\u00A7lS\u00A73\u00A7lM\u00A7b\u00A7lP";
     private static final String OBJECTIVE_NAME = "cabal_hud";
     private static final String[] TEAM_NAMES = {"ch_t1", "ch_t2", "ch_t3", "ch_t4", "ch_t5"};
     private static final String[] ENTRY_KEYS = {"\u00A71", "\u00A72", "\u00A73", "\u00A74", "\u00A75"};
 
     private final EconomyService economyService;
     private final PlayerStatsService statsService;
+    private final CabalConfig cabalConfig;
     private final Map<UUID, HudState> hudStates = new ConcurrentHashMap<>();
     private final Set<UUID> hiddenPlayers = ConcurrentHashMap.newKeySet();
     private long nextUpdateTick = 0;
@@ -60,9 +61,10 @@ public final class HudService {
         }
     }
 
-    public HudService(EconomyService economyService, PlayerStatsService statsService) {
+    public HudService(EconomyService economyService, PlayerStatsService statsService, CabalConfig cabalConfig) {
         this.economyService = economyService;
         this.statsService = statsService;
+        this.cabalConfig = cabalConfig;
     }
 
     /**
@@ -135,7 +137,7 @@ public final class HudService {
         Scoreboard sb = new Scoreboard();
         Objective obj = sb.addObjective(
             OBJECTIVE_NAME, ObjectiveCriteria.DUMMY,
-            Component.literal(TITLE),
+            Component.literal(cabalConfig.hudTitle()),
             ObjectiveCriteria.RenderType.INTEGER, false,
             BlankFormat.INSTANCE
         );
@@ -212,11 +214,11 @@ public final class HudService {
         double balance = economyService.getBalance(player.getUUID());
         int ping = player.connection.latency();
         return List.of(
-            formatHudLine("$", "a", "Money", "$" + String.format("%.2f", balance)),
-            formatHudLine("\u2726", "c", "Kills", String.valueOf(stats.kills())),
-            formatHudLine("\u2620", "4", "Deaths", String.valueOf(stats.deaths())),
-            formatHudLine("\u231B", "b", "Playtime", formatPlaytime(stats.playtimeSeconds())),
-            formatHudLine("\u26A1", "e", "Ping", Math.max(0, ping) + "ms")
+            formatHudLine(cabalConfig.hudIcon("money"),    cabalConfig.hudColor("money"),    "Money",    "$" + String.format("%.2f", balance)),
+            formatHudLine(cabalConfig.hudIcon("kills"),    cabalConfig.hudColor("kills"),    "Kills",    String.valueOf(stats.kills())),
+            formatHudLine(cabalConfig.hudIcon("deaths"),   cabalConfig.hudColor("deaths"),   "Deaths",   String.valueOf(stats.deaths())),
+            formatHudLine(cabalConfig.hudIcon("playtime"), cabalConfig.hudColor("playtime"), "Playtime", formatPlaytime(stats.playtimeSeconds())),
+            formatHudLine(cabalConfig.hudIcon("ping"),     cabalConfig.hudColor("ping"),     "Ping",     Math.max(0, ping) + "ms")
         );
     }
 

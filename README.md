@@ -160,6 +160,57 @@ Claims are persisted to `server/claims.json` as a JSON map keyed by player UUID.
 
 The `dimension` and `trusted` fields are optional for backward compatibility; legacy entries default to `minecraft:overworld` and an empty trust list.
 
+## Cabal config (`server/cabal-config.json`)
+
+A single, user-friendly JSON file at `server/cabal-config.json` lets server owners tweak the most-requested knobs without touching Java code. The file is created with sensible defaults on first server start by the `cabal-mobs` mod; edit it and restart the server to pick up changes.
+
+```json
+{
+  "babyCreeper": {
+    "spawnChance": 0.30
+  },
+  "evoker": {
+    "enabled": true
+  },
+  "server": {
+    "name": "Cabal SMP",
+    "colorCodes": "&b&l"
+  },
+  "hud": {
+    "titleOverride": "&b&lC&3&lA&9&lB&b&lA&3&lL &9&lS&3&lM&b&lP",
+    "icons": {
+      "money": "$",
+      "kills": "\u2726",
+      "deaths": "\u2620",
+      "playtime": "\u231B",
+      "ping": "\u26A1"
+    },
+    "colors": {
+      "money": "a",
+      "kills": "c",
+      "deaths": "4",
+      "playtime": "b",
+      "ping": "e"
+    }
+  }
+}
+```
+
+| Field | Effect |
+|-------|--------|
+| `babyCreeper.spawnChance` | Probability a creeper becomes a baby when spawned through `NATURAL`, `SPAWN_ITEM_USE`, or `SPAWN_EGG` (range `0.0`–`1.0`). Set to `0.0` to disable baby creepers entirely. |
+| `evoker.enabled` | Master switch for the evoker boss system. `false` disables boss scheduling/loot, the elemental fire/lightning arrows (and their `/givearrow`/`/giveevokereye` commands), and Evoker's Wing crafting/speed/kinetic-immunity hooks. |
+| `server.name` | Plain server name used in chat and as the default HUD title. |
+| `server.colorCodes` | Formatting codes prefixed to `server.name`. Supports `&`-style shortcodes (e.g. `&b&l` for bold aqua) or raw `§` codes. |
+| `hud.titleOverride` | When non-empty, replaces the computed `colorCodes + name` title with a custom string (useful for multi-color titles). Set to `""` or `null` to fall back to the computed title. |
+| `hud.icons.*` | Glyph shown before each HUD line label. Any printable character (e.g. `$`, `✦`, `♥`). |
+| `hud.colors.*` | Single-character Minecraft color code applied to the icon/value on each HUD line (`a` green, `c` light red, `4` dark red, `b` aqua, `e` yellow, etc.). |
+
+**Notes**
+- Missing or malformed keys fall back to the defaults shown above; the loader never silently deletes user keys it does not recognize, so adding future Cabal fields is non-destructive.
+- `server/cabal-config.json` is tracked in the repo as the default template (same pattern as `server/economy-config.json`). If the file is ever deleted at runtime, the `cabal-mobs` mod rewrites defaults on next start.
+- Disabling the evoker also stops spawning Evoker's Eyes, so any in-world eyes become cosmetic — a deliberate consequence of disabling the full evoker system.
+
 ## Building the claim mod
 
 The claim mod pulls Fabric API **0.141.3+1.21.11** straight from the Fabric Maven (no local `publishToMavenLocal` step is required — the dependency is fully public). Gradle uses the **official Mojang mappings** (`loom.officialMojangMappings()`) so source references match the normal `net.minecraft.*` names in decompiled 1.21.11.
