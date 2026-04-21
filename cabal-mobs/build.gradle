@@ -33,7 +33,12 @@ tasks.withType(JavaCompile).configureEach {
 }
 
 tasks.named("processResources") {
-    from(rootProject.file("../server/cabal-config.json")) {
+    File cabalConfigTemplate = rootProject.file("../server/cabal-config.json")
+    if (!cabalConfigTemplate.isFile()) {
+        throw new GradleException("Missing required template file: " + cabalConfigTemplate + ". Expected server/cabal-config.json to exist before processResources.")
+    }
+
+    from(cabalConfigTemplate) {
         rename { "cabal-config-default.json" }
     }
 }

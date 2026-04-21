@@ -3,6 +3,8 @@ package com.cabal.claim.config;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonSyntaxException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -24,11 +26,10 @@ import java.util.Map;
 public final class CabalConfig {
     private static final String FILE_NAME = "cabal-config.json";
     private static final Gson GSON = new GsonBuilder().create();
+    private static final Logger LOGGER = LoggerFactory.getLogger("CabalEconomy/CabalConfig");
 
     private static final String DEFAULT_SERVER_NAME = "Cabal SMP";
     private static final String DEFAULT_SERVER_COLOR = "\u00A7b\u00A7l";
-    private static final String DEFAULT_HUD_TITLE =
-            "\u00A7b\u00A7lC\u00A73\u00A7lA\u00A79\u00A7lB\u00A7b\u00A7lA\u00A73\u00A7lL \u00A79\u00A7lS\u00A73\u00A7lM\u00A7b\u00A7lP";
 
     private static final Map<String, String> DEFAULT_ICONS = defaultIcons();
     private static final Map<String, String> DEFAULT_COLORS = defaultColors();
@@ -91,7 +92,7 @@ public final class CabalConfig {
             Root root = GSON.fromJson(raw, Root.class);
             return fromRoot(root);
         } catch (IOException | JsonSyntaxException e) {
-            System.err.println("[CabalClaim] Failed to read " + path + ", using HUD defaults: " + e.getMessage());
+            LOGGER.error("[CabalClaim] Failed to read {}, using HUD defaults", path, e);
             return defaults();
         }
     }
@@ -154,7 +155,7 @@ public final class CabalConfig {
         return new CabalConfig(
                 DEFAULT_SERVER_NAME,
                 DEFAULT_SERVER_COLOR,
-                DEFAULT_HUD_TITLE,
+                DEFAULT_SERVER_COLOR + DEFAULT_SERVER_NAME,
                 new LinkedHashMap<>(DEFAULT_ICONS),
                 new LinkedHashMap<>(DEFAULT_COLORS));
     }
