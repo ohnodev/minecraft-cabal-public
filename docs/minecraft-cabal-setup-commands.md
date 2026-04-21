@@ -4,6 +4,11 @@ This is a cleaned, reproducible command sequence for server setup and networking
 
 ## 1) Cleanup and clone
 
+> **Safety warning:** `pkill -9` sends immediate `SIGKILL` and can corrupt in-flight writes (including world data).  
+> `userdel -r` deletes the user home/data permanently.  
+> Only run these on fresh machines or after confirmed backups. Prefer graceful shutdown first:
+> `sudo systemctl stop minecraft-cabal`
+
 - `sudo pkill -9 -u minecraft`
 - `sudo userdel -r minecraft`
 - `getent passwd minecraft`
@@ -19,7 +24,8 @@ This is a cleaned, reproducible command sequence for server setup and networking
 - `java -version` (must be Java 21+)
 - `openssl rand -base64 32 > /root/minecraft-cabal/server/.rcon-password`
 - `chmod 600 /root/minecraft-cabal/server/.rcon-password`
-- `python3 (download latest fabric installer to /root/minecraft-cabal/server/fabric-installer.jar)`
+- `curl -fL "https://maven.fabricmc.net/net/fabricmc/fabric-installer/1.1.1/fabric-installer-1.1.1.jar" -o /root/minecraft-cabal/server/fabric-installer.jar` (use current installer version, 1.1.1+)
+- `ls -lh /root/minecraft-cabal/server/fabric-installer.jar` (verify file exists at exact path before install)
 - `java -jar /root/minecraft-cabal/server/fabric-installer.jar server -mcversion 1.21.11 -loader 0.19.2 -downloadMinecraft -dir /root/minecraft-cabal/server`
 
 ## 4) systemd service
@@ -42,15 +48,25 @@ This is a cleaned, reproducible command sequence for server setup and networking
 
 - `sudo mkdir -p /etc/nginx/streams-enabled`
 - `sudo cp /etc/nginx/nginx.conf /etc/nginx/nginx.conf.bak-minecraft-stream-$(date +%Y%m%d_%H%M%S)`
-- `edit /etc/nginx/nginx.conf (add: stream { include /etc/nginx/streams-enabled/*.conf; })`
-- `create /etc/nginx/streams-enabled/minecraft-cabal.conf (listen 25565 -> proxy_pass 127.0.0.1:25566)`
+- `sudo grep -qE '^\s*stream\s*\{' /etc/nginx/nginx.conf || printf '\nstream {\n    include /etc/nginx/streams-enabled/*.conf;\n}\n' | sudo tee -a /etc/nginx/nginx.conf > /dev/null`
+- Create `/etc/nginx/streams-enabled/minecraft-cabal.conf`:
+  ```bash
+  sudo tee /etc/nginx/streams-enabled/minecraft-cabal.conf > /dev/null <<'EOF'
+  server {
+      listen 25565;
+      proxy_pass 127.0.0.1:25566;
+      proxy_connect_timeout 5s;
+      proxy_timeout 1h;
+  }
+  EOF
+  ```
 - `sudo nginx -t`
 - `sudo systemctl reload nginx`
 
 ## 7) Via + Grim + Geyser/Floodgate compatibility
 
-- `edit /root/minecraft-cabal/server/config/Geyser-Fabric/config.yml`
-- `set advanced.java.use-direct-connection: false`
+- `sudo sed -i 's/^\([[:space:]]*use-direct-connection:\).*/\1 false/' /root/minecraft-cabal/server/config/Geyser-Fabric/config.yml`
+- `rg -n "use-direct-connection" /root/minecraft-cabal/server/config/Geyser-Fabric/config.yml`
 - `sudo systemctl restart minecraft-cabal`
 
 ## 8) Verify final state
