@@ -8,7 +8,7 @@
 
 **How traffic flows:** Nginx listens on **0.0.0.0:25565** (TCP `stream`) and forwards to the game on **127.0.0.1:25566** so only one process owns the public Java game port. Bedrock traffic (UDP **19132**) is delivered directly to the Minecraft process (Geyser listens on the JVM), so it does **not** go through nginx. You still must expose/open **19132/udp** at every network layer (Docker port publishing, host firewall, cloud/VPS firewall/security group); otherwise Bedrock clients will time out even when Java clients connect fine.
 
-Players connect with a **normal vanilla 1.21.11 client** (Java) — no mods needed on the client side. Modern **1.21.x clients** (1.21.x ≠ 1.21.11) are also accepted through the Via translation stack (ViaFabric + ViaVersion + ViaBackwards) so slightly-older clients can join the same server without a separate proxy. **Bedrock** clients connect through the Geyser + Floodgate mod pair running inside the Fabric server.
+Players connect with a **normal vanilla 1.21.11 client** (Java) — no mods needed on the client side. Modern **1.21.x clients** (1.21.x ≠ 1.21.11) are accepted through the Via translation stack (ViaFabric + ViaVersion + ViaBackwards). **Bedrock** clients connect through the Geyser + Floodgate mod pair running inside the Fabric server.
 
 ## Quick commands
 
@@ -271,16 +271,17 @@ The server uses **Fabric Loader 0.19.2** with **Fabric API 0.141.3+1.21.11**. Th
 | ViaFabric | 0.4.21+159-1.14-1.21 | Fabric platform adapter for the Via translation stack |
 | ViaVersion | 5.9.0 | Core protocol translation engine |
 | ViaBackwards | 5.9.0 | Downgrade support so older clients can join the newer 1.21.11 server |
-| Geyser-Fabric | 2.9.5-b1117 | Bedrock client listener on UDP **19132** |
+| Geyser-Fabric | 2.9.5-b1119 | Bedrock client listener on UDP **19132** |
 | Floodgate-Fabric | 2.2.6-b60 | Allows Bedrock players to join without a Java account |
 | cabal-claim | 1.3.3 | Land claims (`/claim`), `/home` teleport, land trust, auction/economy |
 | cabal-mobs | 1.0.1 | Baby creepers and the minute-gated evoker boss |
 
 **Protocol policy:**
 - Native **1.21.11** Java clients join without any translation.
-- Older 1.21.x Java clients are transparently translated by the Via stack (ViaFabric bundles the server-side integration; ViaBackwards carries the 1.21.x → 1.21.11 mappings).
-- Pre-1.21 clients are intentionally unsupported; ViaRewind is **not** installed.
+- Older 1.21.x Java clients are translated by the Via stack (ViaFabric bundles the server-side integration; ViaBackwards carries the 1.21.x → 1.21.11 mappings).
+- Pre-1.21 clients are intentionally unsupported; ViaRewind may be installed but is not required for the 1.21.x profile.
 - **Bedrock** clients connect on UDP **19132** via Geyser-Fabric; Floodgate-Fabric authenticates them against the Java backend so a linked Microsoft account is optional.
+- When running Via + Grim + Geyser/Floodgate together, set `advanced.java.use-direct-connection: false` in `server/config/Geyser-Fabric/config.yml` to avoid Netty handler-order conflicts on Bedrock login.
 
 **Anticheat:** The server runs upstream [**Grim Anticheat**](https://github.com/GrimAnticheat/Grim) (`grimac-fabric-*.jar`) directly from Modrinth/GitHub releases. The old in-repo `reaper-ac/` fork is no longer deployed. Logs are routed to `logs/anticheat.log` via `server/log4j2.xml` (logger name `ac.grim.grimac`).
 
