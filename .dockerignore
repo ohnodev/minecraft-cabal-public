@@ -1,0 +1,22 @@
+# Shrink build context for `docker compose build` (server tree is bind-mounted at runtime).
+.git
+.idea
+.vscode
+**/.gradle
+**/build
+api/node_modules
+web/node_modules
+.local-tools
+backups
+server/world
+server/world_nether
+server/world_the_end
+server/logs
+server/crash-reports
+server/libraries
+server/.fabric
+server/versions
+server/cache
+server/*.log
+server/server.jar
+server/fabric-server-launch.jar

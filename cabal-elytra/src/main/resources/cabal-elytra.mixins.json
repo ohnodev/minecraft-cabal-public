@@ -1,0 +1,13 @@
+{
+  "required": true,
+  "package": "com.cabal.elytra.mixin",
+  "compatibilityLevel": "JAVA_25",
+  "mixins": [
+    "CraftingResultMixin",
+    "EvokersWingGlideMixin",
+    "EvokersWingResultSlotMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

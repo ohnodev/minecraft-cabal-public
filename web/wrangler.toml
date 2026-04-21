@@ -1,0 +1,5 @@
+# Cloudflare Pages — `cd web && npm run deploy`
+# Create the project once in the dashboard or via first deploy; override name with CLI if needed.
+name = "cabal-smp"
+pages_build_output_dir = "dist"
+compatibility_date = "2025-03-30"

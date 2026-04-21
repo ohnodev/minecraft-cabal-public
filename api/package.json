@@ -1,0 +1,32 @@
+{
+  "name": "cabal-smp-api",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "generate-map-cache": "node --max-old-space-size=8192 dist/generate-map-cache.js",
+    "generate-map-cache:overworld": "MC_DIMENSION=overworld MAP_DIMENSION=overworld node --max-old-space-size=8192 dist/generate-map-cache.js",
+    "generate-map-cache:nether": "MC_DIMENSION=nether MAP_DIMENSION=nether node --max-old-space-size=8192 dist/generate-map-cache.js",
+    "generate-map-cache:end": "MC_DIMENSION=end MAP_DIMENSION=end node --max-old-space-size=8192 dist/generate-map-cache.js",
+    "generate-map-cache:all": "npm run generate-map-cache:overworld && npm run generate-map-cache:nether && npm run generate-map-cache:end",
+    "generate-map-cache:dev": "NODE_OPTIONS=--max-old-space-size=8192 tsx src/generate-map-cache.ts",
+    "validate-map-cache": "node dist/validate-map-cache-cli.js",
+    "extract-sprites": "tsx src/extract-item-sprites.ts"
+  },
+  "dependencies": {
+    "@fastify/cors": "^10.0.0",
+    "@fastify/static": "^9.0.0",
+    "better-sqlite3": "^12.8.0",
+    "fastify": "^5.0.0",
+    "minecraft-server-util": "^5.4.4",
+    "prismarine-nbt": "^2.7.0"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.13",
+    "@types/node": "^22.0.0",
+    "tsx": "^4.0.0",
+    "typescript": "^5.0.0"
+  }
+}

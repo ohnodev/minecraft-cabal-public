@@ -1,0 +1,16 @@
+Welcome to Cabal SMP!
+
+Please follow this Code of Conduct:
+
+1. Be respectful. No harassment, hate speech, bullying, or slurs.
+2. No griefing, stealing, or scamming.
+3. No cheating, hacks, x-ray, dupes, exploits, or automation that gives unfair advantage.
+4. No spam in chat, signs, or books.
+5. Keep builds and redstone reasonable; avoid lag machines.
+6. Respect claims, bases, and community projects.
+7. No NSFW, doxxing, threats, or illegal content.
+8. Follow moderator instructions and server announcements.
+9. Report serious issues or bugs to staff instead of abusing them.
+10. Have fun and help keep the server welcoming.
+
+Failure to follow these rules may result in warnings, mutes, kicks, bans, or rollbacks.

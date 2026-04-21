@@ -1,0 +1,116 @@
+# === Server runtime artifacts ===
+server/world/
+server/world_nether/
+server/world_the_end/
+server/logs/
+server/crash-reports/
+server/server.jar
+server/fabric-server-launch.jar
+server/libraries/
+server/.fabric/
+server/server.properties
+server/*.log
+server/usercache.json
+server/banned-ips.json
+server/banned-players.json
+server/whitelist.json
+server/claims.json
+server/player-positions.json
+server/spawn-protection-toggle.json
+server/.rcon-password
+
+# === Backups ===
+backups/
+
+# === Claim mod build artifacts ===
+claim-mod/build/
+claim-mod/.gradle/
+claim-mod/bin/
+claim-mod/run/
+
+# === Cabal mobs build artifacts ===
+cabal-mobs/build/
+cabal-mobs/.gradle/
+cabal-mobs/bin/
+cabal-mobs/run/
+
+# === Cabal elytra build artifacts ===
+cabal-elytra/build/
+cabal-elytra/.gradle/
+cabal-elytra/bin/
+cabal-elytra/run/
+
+# === Gradle wrapper jar (optional, some repos commit this) ===
+# claim-mod/gradle/wrapper/gradle-wrapper.jar
+
+# === IDE files ===
+.idea/
+*.iml
+.vscode/
+.settings/
+.classpath
+.project
+.factorypath
+
+# === OS files ===
+.DS_Store
+Thumbs.db
+
+# === Generated runtime mod/plugin configs ===
+server/config/ReaperAC/
+server/config/bStats/
+server/config/ViaVersion/
+server/config/ViaBackwards/
+server/config/viafabric/
+server/config/spark/
+server/config/cabal-mobs/
+server/config/Geyser-Fabric/
+server/config/floodgate/
+
+# === Fabric runtime versions cache ===
+server/versions/
+server/cache/
+
+# === 26.2 -> 26.1 migration backups (delete once verified) ===
+server/.bak-26.2-migration/
+server/libraries.bak-26.2/
+server/.fabric.bak-26.2/
+server/fabric-server-launch.jar.bak-26.2
+
+# === 26.1.2 -> 1.21.11 migration backups (delete once verified) ===
+server/fabric-server-launch.jar.bak-26.1.2-*
+server/fabric-server-launcher.properties.bak-26.1.2-*
+server/server.jar.bak-26.1.2-*
+server/versions.bak-26.1.2-*/
+server/mods/_superseded/
+server/fabric-installer.jar
+
+# === Local scratch workspace (not committed) ===
+.local-tools/
+
+# === API ===
+api/node_modules/
+api/dist/
+api/.env
+api/cache/
+
+# === Web frontend ===
+web/node_modules/
+web/dist/
+web/.env
+web/.env.local
+
+# Env / secrets (broad patterns — keep specific lines above for clarity)
+*.env
+*.env.*
+!web/.env.production
+*.local.env
+config/sites/*.local.env
+
+# === PM2 logs ===
+logs/*.log
+logs/*.log.gz
+logs/*.gz
+!logs/.gitkeep
+server/economy.db
+server/config/GrimAC/

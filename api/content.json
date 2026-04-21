@@ -1,0 +1,107 @@
+{
+  "serverName": "Cabal SMP",
+  "description": "A survival multiplayer Minecraft server running vanilla 26.2 Snapshot 2 with Fabric. Join, explore, and claim your land.",
+  "connectAddress": "minecraft.thecabal.app",
+  "updates": [
+    {
+      "date": "2026-04-12",
+      "title": "Baby creepers + 26.2 client support focus",
+      "body": "Baby creepers were added, and we deprecated old client compatibility to keep the server smooth and stable while we focus on expanding server mechanics. Cabal SMP currently supports 26.2 Snapshot clients only, and we hope broader client support can return soon."
+    },
+    {
+      "date": "2026-04-09",
+      "title": "Server upgraded to Minecraft 26.2 Snapshot 2",
+      "body": "Cabal SMP is now running Minecraft 26.2 Snapshot 2 with our Fabric stack and gameplay systems fully synced to the latest snapshot."
+    },
+    {
+      "date": "2026-04-05",
+      "title": "Land deed ecosystem is live",
+      "body": "Added the full land deed economy flow: deed management, listing/selling lands, and foreclosure mechanics. Overview video: https://www.youtube.com/watch?v=6sE-zpcMV3Y"
+    },
+    {
+      "date": "2026-04-03",
+      "title": "Leaderboards command added",
+      "body": "Added /leaderboard and /leaderboards with a tabbed in-game UI for richest players, playtime, kills, K/D, deaths, and ping rankings."
+    },
+    {
+      "date": "2026-04-03",
+      "title": "Live player locations + all map dimensions",
+      "body": "The website map now shows live player locations and supports Overworld, Nether, and The End tabs so you can track activity across all three dimensions."
+    },
+    {
+      "date": "2026-04-03",
+      "title": "Overworld radius doubled to 10k",
+      "body": "Overworld world radius has been doubled from 5,000 to 10,000 blocks (20,000 diameter), and map generation now reflects the expanded playable area."
+    },
+    {
+      "date": "2026-04-02",
+      "title": "Auction: fireworks added",
+      "body": "Firework Rockets are now tradable in auction. Server buy/sell is stack-only for fireworks: sell 64x for $2, buy 64x for $50."
+    },
+    {
+      "date": "2026-04-02",
+      "title": "Gameplay tuning: entity cramming",
+      "body": "Slightly increased the max entity cramming limit from 24 to 28 to reduce accidental mob/item suffocation in tighter farms while keeping anti-lag behavior in place."
+    },
+    {
+      "date": "2026-04-02",
+      "title": "Backpack command added",
+      "body": "Added personal backpack storage with /backpack (alias: /bp). Open your 9-slot backpack from anywhere; contents save on close and follow your account."
+    },
+    {
+      "date": "2026-04-01",
+      "title": "Auction market refresh",
+      "body": "Auction market now focuses on core tracked materials with cleaner pricing, safer settlement flow, and clearer in-game buy/sell messaging."
+    },
+    {
+      "date": "2026-04-01",
+      "title": "My Listings + unlist UI",
+      "body": "Added /mylistings with a chest-style paged view of your active listings. You can click entries to unlist and return items to your inventory (with safe overflow drop handling)."
+    },
+    {
+      "date": "2026-04-01",
+      "title": "Ore ledger + transfer tracking",
+      "body": "Economy now tracks mined diamond, raw iron, raw gold, and netherite scrap outputs with ownership transfer history to support anti-dup auditing and market integrity."
+    },
+    {
+      "date": "2026-04-01",
+      "title": "AntiXray enabled",
+      "body": "Added AntiXray on Fabric (engine mode 3) to reduce ore-xray abuse while keeping normal gameplay visuals for legit players."
+    },
+    {
+      "date": "2026-04-02",
+      "title": "ReaperAC v3 anticheat",
+      "body": "ReaperAC v3 is live with a new low-overhead architecture: Fabric event capture + Rust scoring engine. No packet interception, minimal tick cost, enforcement-ready."
+    },
+    {
+      "date": "2026-03-31",
+      "title": "/home teleport",
+      "body": "If you have a claim, use /home to return to your land from anywhere. There is a 30-second cooldown after taking damage and a 60-second cooldown between uses so it cannot be abused in combat."
+    },
+    {
+      "date": "2026-03-31",
+      "title": "Land trust",
+      "body": "Claim owners can share their land with online friends: /landtrust <player>, /landuntrust <player>, and /landlist. Trusted players can build, open containers, and interact with blocks and entities inside your claim."
+    },
+    {
+      "date": "2026-03-31",
+      "title": "World border",
+      "body": "The overworld uses a vanilla world border of 20,000 blocks diameter (~10,000 block radius from the border center). Nether and End borders are scaled separately so coordinates stay sensible for portals."
+    },
+    {
+      "date": "2026-03-30",
+      "title": "Land Claims",
+      "body": "Use /claim to protect a 100-block radius around your base. By default only you can build there; you can invite friends with /landtrust (see Land trust update)."
+    },
+    {
+      "date": "2026-03-30",
+      "title": "Fabric Runtime",
+      "body": "Server upgraded to Fabric for server-side mod support. Vanilla clients connect normally."
+    },
+    {
+      "date": "2026-03-29",
+      "title": "Server Launch",
+      "body": "Cabal SMP is live on Minecraft 26.1. Welcome!"
+    }
+  ]
+}

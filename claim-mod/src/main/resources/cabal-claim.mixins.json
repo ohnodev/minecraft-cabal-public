@@ -1,0 +1,13 @@
+{
+  "required": true,
+  "package": "com.cabal.claim.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": [
+    "SignUpdateMixin",
+    "SpawnProtectionToggleMixin",
+    "WhisperCommandLogMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

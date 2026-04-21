@@ -1,0 +1,14 @@
+{
+  "required": true,
+  "package": "com.cabal.mobs.mixin",
+  "compatibilityLevel": "JAVA_25",
+  "mixins": [
+    "CreeperFinalizeSpawnMixin",
+    "EvokerBossDimensionsMixin",
+    "EvokerBossSummonSpellMixin",
+    "EvokerBossArrowCollisionMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

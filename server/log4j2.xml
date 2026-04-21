@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="WARN">
+  <Appenders>
+    <Console name="Console" target="SYSTEM_OUT">
+      <PatternLayout pattern="[%d{HH:mm:ss}] [%t/%level]: %msg%n"/>
+    </Console>
+    <RollingRandomAccessFile
+        name="File"
+        fileName="logs/latest.log"
+        filePattern="logs/%d{yyyy-MM-dd}-%i.log">
+      <PatternLayout pattern="[%d{HH:mm:ss}] [%t/%level]: %msg%n"/>
+      <Policies>
+        <TimeBasedTriggeringPolicy interval="1" modulate="true"/>
+        <SizeBasedTriggeringPolicy size="50 MB"/>
+      </Policies>
+      <DefaultRolloverStrategy max="10"/>
+    </RollingRandomAccessFile>
+    <RollingRandomAccessFile
+        name="LedgerFile"
+        fileName="logs/ledger.log"
+        filePattern="logs/ledger-%d{yyyy-MM-dd}-%i.log">
+      <PatternLayout pattern="[%d{HH:mm:ss}] [%t/%level]: %msg%n"/>
+      <Policies>
+        <TimeBasedTriggeringPolicy interval="1" modulate="true"/>
+        <SizeBasedTriggeringPolicy size="25 MB"/>
+      </Policies>
+      <DefaultRolloverStrategy max="30"/>
+    </RollingRandomAccessFile>
+    <RollingRandomAccessFile
+        name="AnticheatFile"
+        fileName="logs/anticheat.log"
+        filePattern="logs/anticheat-%d{yyyy-MM-dd}-%i.log">
+      <PatternLayout pattern="[%d{HH:mm:ss}] [%t/%level]: %msg%n"/>
+      <Policies>
+        <TimeBasedTriggeringPolicy interval="1" modulate="true"/>
+        <SizeBasedTriggeringPolicy size="25 MB"/>
+      </Policies>
+      <DefaultRolloverStrategy max="30"/>
+    </RollingRandomAccessFile>
+  </Appenders>
+  <Loggers>
+    <Logger name="com.github.retrooper.packetevents" level="error"/>
+    <Logger name="io.github.retrooper.packetevents" level="error"/>
+    <Logger name="ac.grim.grimac" level="warn" additivity="false">
+      <AppenderRef ref="AnticheatFile"/>
+    </Logger>
+    <Logger name="CabalEconomy/Ledger" level="info" additivity="false">
+      <AppenderRef ref="LedgerFile"/>
+    </Logger>
+    <Root level="info">
+      <AppenderRef ref="Console"/>
+      <AppenderRef ref="File"/>
+    </Root>
+  </Loggers>
+</Configuration>

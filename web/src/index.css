@@ -1,0 +1,531 @@
+@import "https://fonts.googleapis.com/css2?family=Press+Start+2P&family=JetBrains+Mono:wght@400;500;600;700&display=swap";
+
+@import "./cabal-variables.css";
+@import "./components/Navbar.css";
+@import "./components/Footer.css";
+
+:root {
+  --navbar-height: 48px;
+}
+
+@media (max-width: 768px) {
+  :root {
+    --navbar-height: 44px;
+  }
+}
+
+html {
+  scroll-padding-top: var(--navbar-height);
+  font-size: 16px;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+button {
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+a {
+  color: inherit;
+}
+
+[data-theme="light"] body {
+  background: linear-gradient(165deg, #dfe8d6 0%, #e9e6dc 45%, #d4cbb8 100%);
+  background-attachment: fixed;
+}
+
+[data-theme="dark"] body {
+  background: var(--color-background);
+  background-attachment: fixed;
+}
+
+body {
+  font-family: var(--font-body);
+  color: var(--color-text-primary);
+  line-height: 1.6;
+  min-height: 100dvh;
+  overflow-x: hidden;
+  width: 100%;
+  max-width: 100vw;
+}
+
+#root {
+  width: 100%;
+  max-width: 100vw;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  margin: 0 auto;
+}
+
+.main-with-fixed-navbar {
+  flex: 1;
+  width: 100%;
+  max-width: min(96vw, 1420px);
+  margin: 0 auto;
+  padding: 1.25rem 1.25rem 2.5rem;
+  padding-top: calc(var(--navbar-height) + 1.25rem);
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-heading);
+}
+
+code {
+  font-family: var(--font-body);
+}
+
+.dashboard-discord-cta:hover {
+  background: #265c20;
+  color: #fff;
+}
+
+.dashboard-discord-cta:focus-visible {
+  outline: 2px solid var(--color-primary-light);
+  outline-offset: 2px;
+}
+
+/* Interactive map: no iOS long-press callout/selection; pan uses pointer events on canvas */
+.world-map-root {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: none;
+}
+
+.world-map-root canvas {
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* World map + claims sidebar (desktop: map left, list right) */
+.map-section-row {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  /* For max-height: map column width ≈ min(760px, 62% row) → match square map (1:1) */
+  container-type: inline-size;
+  container-name: map-section;
+}
+
+.map-section-mapcol {
+  width: 100%;
+  min-width: 0;
+}
+
+.map-section-sidebar {
+  width: 100%;
+  min-width: 0;
+}
+
+@media (min-width: 960px) {
+  .map-section-row {
+    flex-direction: row;
+    /* Do not stretch map column to sidebar height (avoids empty band under square map). */
+    align-items: flex-start;
+    gap: 1.5rem;
+  }
+
+  .map-section-mapcol {
+    flex: 0 1 min(760px, 62%);
+    width: min(760px, 62%);
+  }
+
+  .map-section-sidebar {
+    flex: 1 1 0;
+    max-width: none;
+    min-width: 0;
+  }
+}
+
+.map-claims-sidebar {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  padding: 1rem 1rem 0.75rem;
+  box-shadow: inset 0 1px 4px rgba(42, 35, 25, 0.05);
+  min-height: min(52vh, 420px);
+  display: flex;
+  flex-direction: column;
+}
+
+.map-claims-sidebar h3 {
+  font-size: 0.85rem;
+  margin: 0 0 0.75rem;
+  color: var(--color-primary);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.map-claims-sidebar .map-claims-empty {
+  font-size: 13px;
+  color: var(--color-text-muted);
+  line-height: 1.5;
+  margin: 0 0 0.5rem;
+}
+
+.map-claims-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-height: min(52vh, 420px);
+  overflow-y: auto;
+  flex: 1 1 auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.map-claims-list::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+  background: transparent;
+}
+
+@media (min-width: 960px) {
+  /* Cap sidebar to same height as the map (square canvas width = column width). */
+  .map-claims-sidebar {
+    min-height: 0;
+    max-height: min(760px, 62cqw);
+    overflow: hidden;
+  }
+
+  .map-claims-list {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    max-height: none;
+  }
+
+}
+
+.map-claim-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.35rem 0.75rem;
+  align-items: baseline;
+  padding: 0.65rem 0;
+  border-bottom: 1px solid var(--color-border);
+  font-size: 13px;
+}
+
+.map-claim-row:last-child {
+  border-bottom: none;
+}
+
+.map-claim-owner {
+  font-weight: 600;
+  color: var(--color-text-primary);
+  overflow-wrap: anywhere;
+  word-wrap: break-word;
+}
+
+.map-claim-coords {
+  font-family: var(--font-body);
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  text-align: right;
+  white-space: nowrap;
+}
+
+.map-claim-radius {
+  grid-column: 1 / -1;
+  font-size: 11px;
+  color: var(--color-text-muted);
+}
+
+.map-section-legend-wrap {
+  margin-top: 10px;
+}
+
+.map-skeleton {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  background: linear-gradient(120deg, rgba(92, 86, 76, 0.35), rgba(92, 86, 76, 0.25), rgba(92, 86, 76, 0.35));
+}
+
+.map-skeleton-grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(to right, rgba(255, 255, 255, 0.06) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.06) 1px, transparent 1px);
+  background-size: 28px 28px;
+}
+
+.map-skeleton-pulse {
+  position: absolute;
+  border: 1px dashed rgba(255, 255, 255, 0.2);
+  border-radius: 999px;
+  animation: map-pulse 1.6s ease-in-out infinite;
+}
+
+.map-skeleton-pulse-a {
+  width: 18%;
+  height: 18%;
+  left: 42%;
+  top: 36%;
+}
+
+.map-skeleton-pulse-b {
+  width: 12%;
+  height: 12%;
+  left: 28%;
+  top: 54%;
+  animation-delay: 0.35s;
+}
+
+.map-skeleton-label {
+  position: absolute;
+  left: 50%;
+  bottom: 14px;
+  transform: translateX(-50%);
+  font-size: 12px;
+  color: var(--color-text-muted);
+}
+
+.map-claims-skeleton {
+  overflow: hidden;
+}
+
+/* Same grid as .map-claim-row: owner | coords, then full-width radius line */
+.claims-skeleton-block {
+  display: block;
+  border-radius: 4px;
+  background: linear-gradient(90deg, rgba(120, 120, 120, 0.22), rgba(160, 160, 160, 0.34), rgba(120, 120, 120, 0.22));
+  background-size: 200% 100%;
+  animation: shimmer 1.2s linear infinite;
+}
+
+.map-claim-row--skeleton .claims-skeleton-block--owner {
+  height: 14px;
+  width: min(78%, 11rem);
+}
+
+.map-claim-row--skeleton .claims-skeleton-block--coords {
+  height: 12px;
+  width: 5.85rem;
+  justify-self: end;
+}
+
+.map-claim-row--skeleton .claims-skeleton-block--radius {
+  height: 11px;
+  width: 7.35rem;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+@keyframes map-pulse {
+  0%,
+  100% {
+    opacity: 0.25;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.6;
+    transform: scale(1.03);
+  }
+}
+
+.updates-load-more:focus-visible {
+  outline: 2px solid var(--color-primary-light);
+  outline-offset: 2px;
+}
+
+/* ── Auction House table ───────────────────────────────────────────── */
+
+.auction-table-wrap {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  max-height: min(60vh, 520px);
+  overflow-x: auto;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.auction-table-wrap::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+  background: transparent;
+}
+
+.auction-table thead .auction-th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: var(--color-surface);
+  box-shadow: 0 1px 0 var(--color-border);
+}
+
+.auction-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+  min-width: 520px;
+}
+
+.auction-th {
+  text-align: left;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-text-muted);
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--color-border);
+  white-space: nowrap;
+}
+
+.auction-th-sprite {
+  width: 40px;
+  padding-right: 0;
+}
+
+.auction-th-right {
+  text-align: right;
+}
+
+.auction-row {
+  transition: background 0.12s ease;
+}
+
+.auction-row:hover {
+  background: rgba(76, 175, 80, 0.04);
+}
+
+.auction-td {
+  padding: 8px 14px;
+  border-bottom: 1px solid var(--color-border);
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+.auction-row:last-child .auction-td {
+  border-bottom: none;
+}
+
+.auction-td-sprite {
+  width: 40px;
+  padding-right: 0;
+  text-align: center;
+}
+
+.auction-sprite {
+  width: 24px;
+  height: 24px;
+  image-rendering: pixelated;
+  vertical-align: middle;
+}
+
+.auction-td-name {
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.auction-td-right {
+  text-align: right;
+}
+
+.auction-td-price {
+  font-weight: 700;
+  color: var(--color-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+.auction-td-seller {
+  color: var(--color-text-secondary);
+}
+
+.auction-td-time {
+  color: var(--color-text-muted);
+  font-size: 12px;
+}
+
+.auction-empty {
+  padding: 32px 16px;
+  text-align: center;
+  color: var(--color-text-muted);
+  font-size: 14px;
+}
+
+/* Skeleton loading */
+.auction-skeleton {
+  padding: 6px 0;
+}
+
+.auction-skeleton-row {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.auction-skeleton-row:last-child {
+  border-bottom: none;
+}
+
+.auction-skeleton-cell {
+  border-radius: 4px;
+  height: 14px;
+  background: linear-gradient(90deg, rgba(120, 120, 120, 0.22), rgba(160, 160, 160, 0.34), rgba(120, 120, 120, 0.22));
+  background-size: 200% 100%;
+  animation: shimmer 1.2s linear infinite;
+}
+
+.auction-skeleton-sprite {
+  width: 24px;
+  height: 24px;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+
+.auction-skeleton-name {
+  width: 30%;
+  min-width: 80px;
+}
+
+.auction-skeleton-short {
+  width: 14%;
+  min-width: 40px;
+}
+
+@media (max-width: 600px) {
+  .auction-table {
+    font-size: 13px;
+  }
+
+  .auction-th,
+  .auction-td {
+    padding: 7px 8px;
+  }
+
+  .auction-sprite {
+    width: 20px;
+    height: 20px;
+  }
+}

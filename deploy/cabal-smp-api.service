@@ -1,0 +1,24 @@
+[Unit]
+Description=Cabal SMP API server
+After=network.target minecraft-cabal.service
+
+[Service]
+Type=simple
+WorkingDirectory=/root/minecraft-cabal/api
+ExecStart=/root/.nvm/versions/node/v22.22.2/bin/node dist/index.js
+Restart=on-failure
+RestartSec=5
+
+Environment=API_HOST=127.0.0.1
+Environment=API_PORT=4866
+Environment=MC_HOST=127.0.0.1
+Environment=MC_PORT=25566
+Environment=MC_SERVER_DIR=/root/minecraft-cabal/server
+Environment=CORS_ORIGINS=http://localhost:5173,http://localhost:4173,https://smp.thecabal.app,http://smp.thecabal.app
+
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=cabal-smp-api
+
+[Install]
+WantedBy=multi-user.target
