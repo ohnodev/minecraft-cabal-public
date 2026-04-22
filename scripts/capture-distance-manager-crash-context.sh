@@ -12,7 +12,7 @@ CRASH_DIR="${CRASH_DIR:-${SERVER_DIR}/crash-reports}"
 LOG_DIR="${LOG_DIR:-${SERVER_DIR}/logs}"
 CONTEXT_ROOT="${CONTEXT_ROOT:-${LOG_DIR}/crash-context}"
 STATE_FILE="${STATE_FILE:-${CONTEXT_ROOT}/.last-distance-manager-report}"
-SERVICE_NAME="${SERVICE_NAME:-minecraft-cabal}"
+COMPOSE_SERVICE="${COMPOSE_SERVICE:-minecraft}"
 RETAIN="${RETAIN:-20}"
 JAVA_BIN="${JAVA_BIN:-/usr/lib/jvm/java-25-openjdk-amd64/bin/java}"
 
@@ -69,7 +69,7 @@ fi
 
 if ! {
   echo "captured_at_utc=${stamp}"
-  echo "service=${SERVICE_NAME}"
+  echo "service=${COMPOSE_SERVICE}"
   echo "signature=ReferenceOpenHashSet\$SetIterator.next + DistanceManager.runAllUpdates"
   echo "report_path=${latest_report}"
   echo "report_key=${report_key}"
@@ -80,13 +80,13 @@ if ! {
   echo "--- java version ---"
   "${JAVA_BIN}" -version 2>&1 || true
   echo ""
-  echo "--- systemctl status ---"
-  systemctl status "${SERVICE_NAME}" --no-pager || true
+  echo "--- docker compose ps ---"
+  (cd /root/minecraft-cabal && docker compose ps "${COMPOSE_SERVICE}") || true
 } > "${bundle_dir}/context.txt"; then
   capture_ok=0
 fi
 
-journalctl -u "${SERVICE_NAME}" -n 400 --no-pager > "${bundle_dir}/journal-tail.log" 2>/dev/null || true
+(cd /root/minecraft-cabal && docker compose logs --tail=400 "${COMPOSE_SERVICE}") > "${bundle_dir}/journal-tail.log" 2>/dev/null || true
 ls -la "${SERVER_DIR}/mods" > "${bundle_dir}/mods-list.txt" 2>/dev/null || true
 
 {

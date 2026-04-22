@@ -3,7 +3,6 @@ FROM eclipse-temurin:25-jre-noble
 
 ENV LANG=C.UTF-8 \
     MC_SERVER_DIR=/data \
-    MC_BIND_MODE=public \
     MC_SERVER_PORT=25565 \
     MC_RCON_PORT=25575
 

@@ -14,7 +14,7 @@ import type { MapDimension } from "./map-cache-types.js";
 const __apiDir = path.dirname(fileURLToPath(import.meta.url));
 const API_ROOT = path.resolve(__apiDir, "..");
 const MC_HOST = process.env.MC_HOST ?? "127.0.0.1";
-const MC_PORT = Number(process.env.MC_PORT ?? "25566");
+const MC_PORT = Number(process.env.MC_PORT ?? "25565");
 const API_PORT = Number(process.env.API_PORT ?? "4866");
 const API_HOST = process.env.API_HOST ?? "127.0.0.1";
 const CONTENT_PATH = path.resolve(new URL(".", import.meta.url).pathname, "../content.json");

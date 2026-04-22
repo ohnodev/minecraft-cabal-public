@@ -14,6 +14,7 @@ server/usercache.json
 server/banned-ips.json
 server/banned-players.json
 server/whitelist.json
+server/ops.json
 server/claims.json
 server/player-positions.json
 server/spawn-protection-toggle.json
@@ -113,4 +114,6 @@ logs/*.log.gz
 logs/*.gz
 !logs/.gitkeep
 server/economy.db
+server/economy.db-shm
+server/economy.db-wal
 server/config/GrimAC/
