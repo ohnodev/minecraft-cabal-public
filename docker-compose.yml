@@ -13,8 +13,11 @@ services:
     container_name: cabal-minecraft
     restart: unless-stopped
     ports:
-      - "${MC_HOST_PORT:-25565}:${MC_SERVER_PORT:-25565}"
-      - "${MC_RCON_HOST_PORT:-25575}:${MC_RCON_PORT:-25575}"
+      # Java: bind loopback only so nginx stream can own :25565 (rate limit + logs).
+      # To bind Java on all interfaces again (no nginx on :25565), use e.g. MC_HOST_BIND=0.0.0.0 MC_HOST_PORT=25565.
+      - "${MC_HOST_BIND:-127.0.0.1}:${MC_HOST_PORT:-25566}:${MC_SERVER_PORT:-25565}"
+      # RCON: loopback only — never publish RCON on 0.0.0.0 (WAN-reachable RCON is a critical risk).
+      - "${MC_RCON_HOST_BIND:-127.0.0.1}:${MC_RCON_HOST_PORT:-25575}:${MC_RCON_PORT:-25575}"
       # Geyser Bedrock listener (UDP): only host side is overrideable here.
       # Container-side listener stays on 19132 unless Geyser config is changed.
       - "${MC_BEDROCK_HOST_PORT:-19132}:19132/udp"

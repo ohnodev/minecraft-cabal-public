@@ -6,7 +6,7 @@
 **Connect (Java):** `minecraft.thecabal.app` or `157.230.189.203` — port **25565** (default).  
 **Connect (Bedrock):** same hostname, UDP port **19132** — served in-process by Geyser-Fabric; Floodgate-Fabric lets Bedrock players skip a Java account.
 
-**How traffic flows:** Docker publishes Minecraft Java on **0.0.0.0:25565/tcp** and Bedrock on **0.0.0.0:19132/udp** from the `minecraft` service in `docker-compose.yml`. Geyser-Fabric and Floodgate run inside the same JVM/mod stack as Java. You still must expose/open **25565/tcp** and **19132/udp** at every network layer (Docker publishing, host firewall, cloud/VPS firewall/security group), or clients will time out.
+**How traffic flows:** By default, Compose publishes the Java listener on **`127.0.0.1:25566/tcp`** only and **RCON on `127.0.0.1:25575/tcp`** only; use **nginx `stream`** on the host to expose **25565/tcp** to players (see `deploy/nginx/03-mc-stream-rate-limit.conf`). Bedrock is on **`0.0.0.0:19132/udp`** unless you change it. Geyser-Fabric and Floodgate run inside the same JVM/mod stack as Java. Open **25565/tcp** (or your nginx front port) and **19132/udp** at the firewall / cloud security group, or clients will time out.
 
 Players connect with a **normal vanilla 1.21.11 client** (Java) — no mods needed on the client side. Modern **1.21.x clients** (1.21.x ≠ 1.21.11) are accepted through the Via translation stack (ViaFabric + ViaVersion + ViaBackwards). **Bedrock** clients connect through the Geyser + Floodgate mod pair running inside the Fabric server.
 
@@ -62,7 +62,7 @@ JVM heap is **8 GB** (`scripts/start.sh`). `view-distance` and `simulation-dista
 
 Use [`scripts/mc-maintenance-restart.sh`](scripts/mc-maintenance-restart.sh) for scheduled Docker maintenance restarts with in-game countdown + graceful stop/start. Requires **[mcrcon](https://github.com/Tiiffi/mcrcon)** on the host. Direct `docker compose restart minecraft` remains a valid manual alternative when you do not need countdown broadcasts.
 
-**RCON in `server/server.properties.template`:** keep **`enable-rcon=true`** and **`rcon.port=25575`**. The runtime `rcon.password` is injected by `scripts/start.sh` from `server/.rcon-password` at boot, and the Docker runtime publishes RCON on the configured host port (default `25575`). **Restart Minecraft** after changing RCON so it starts listening.
+**RCON in `server/server.properties.template`:** keep **`enable-rcon=true`** and **`rcon.port=25575`**. The runtime `rcon.password` is injected by `scripts/start.sh` from `server/.rcon-password` at boot. Compose publishes RCON on **`127.0.0.1:25575`** by default (host-only — use **`mcrcon -H 127.0.0.1`**). **Restart Minecraft** after changing RCON so it starts listening.
 
 **For the script:** put the **same** secret in **`server/.rcon-password`** (one line; gitignored), e.g. copy the value from `rcon.password=`, or export **`RCON_PASSWORD`**. See **`server/.rcon-password.example`**.
 
