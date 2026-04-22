@@ -104,6 +104,7 @@ web/.env.local
 # Env / secrets (broad patterns — keep specific lines above for clarity)
 *.env
 *.env.*
+!.env.example
 !web/.env.production
 *.local.env
 config/sites/*.local.env
