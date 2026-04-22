@@ -90,6 +90,10 @@ Use this when you want an explicit, operator-visible restart flow without relyin
 ```bash
 cd /root/minecraft-cabal
 RCON_PASS="$(tr -d '\r\n' < server/.rcon-password)"
+if [ -z "$RCON_PASS" ]; then
+  echo "error: missing or empty server/.rcon-password" >&2
+  exit 1
+fi
 
 # Optional player notice
 mcrcon -H 127.0.0.1 -P 25575 -p "$RCON_PASS" "say [Cabal SMP] Restart in 30 seconds for maintenance."
@@ -99,7 +103,20 @@ sleep 30
 mcrcon -H 127.0.0.1 -P 25575 -p "$RCON_PASS" "save-all flush"
 mcrcon -H 127.0.0.1 -P 25575 -p "$RCON_PASS" "stop"
 
-# Bring service back up
+# Wait until the minecraft compose service is fully stopped (max ~90s)
+for i in $(seq 1 90); do
+  if ! docker compose ps --status running --services minecraft | grep -q '^minecraft$'; then
+    break
+  fi
+  sleep 1
+done
+if docker compose ps --status running --services minecraft | grep -q '^minecraft$'; then
+  echo "error: minecraft service did not stop within 90s" >&2
+  docker compose ps minecraft
+  exit 1
+fi
+
+# Bring service back up after confirmed stop
 docker compose up -d minecraft
 docker compose ps minecraft
 docker compose logs --tail=120 minecraft
