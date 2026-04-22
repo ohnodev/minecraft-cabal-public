@@ -71,6 +71,57 @@ Use [`scripts/mc-maintenance-restart.sh`](scripts/mc-maintenance-restart.sh) for
 sudo -E ./scripts/mc-maintenance-restart.sh
 ```
 
+### Instant clean restart (no countdown)
+
+Use this for an immediate operator restart that still saves world state first:
+
+```bash
+cd /root/minecraft-cabal
+sudo -E ./scripts/mc-restart-now.sh
+```
+
+This script performs: `save-all flush` -> `stop` -> `docker compose up -d minecraft`.
+Keep `scripts/start.sh` — Docker uses it as the container entrypoint and runtime property renderer.
+
+### Manual graceful restart (copy/paste)
+
+Use this when you want an explicit, operator-visible restart flow without relying on the helper script:
+
+```bash
+cd /root/minecraft-cabal
+RCON_PASS="$(tr -d '\r\n' < server/.rcon-password)"
+if [ -z "$RCON_PASS" ]; then
+  echo "error: missing or empty server/.rcon-password" >&2
+  exit 1
+fi
+
+# Optional player notice
+mcrcon -H 127.0.0.1 -P 25575 -p "$RCON_PASS" "say [Cabal SMP] Restart in 30 seconds for maintenance."
+sleep 30
+
+# Graceful save + stop
+mcrcon -H 127.0.0.1 -P 25575 -p "$RCON_PASS" "save-all flush"
+mcrcon -H 127.0.0.1 -P 25575 -p "$RCON_PASS" "stop"
+
+# Wait until the minecraft compose service is fully stopped (max ~90s)
+for i in $(seq 1 90); do
+  if ! docker compose ps --status running --services minecraft | grep -q '^minecraft$'; then
+    break
+  fi
+  sleep 1
+done
+if docker compose ps --status running --services minecraft | grep -q '^minecraft$'; then
+  echo "error: minecraft service did not stop within 90s" >&2
+  docker compose ps minecraft
+  exit 1
+fi
+
+# Bring service back up after confirmed stop
+docker compose up -d minecraft
+docker compose ps minecraft
+docker compose logs --tail=120 minecraft
+```
+
 ## World border
 
 Vanilla Minecraft has a built-in **world border** (no mods). It is controlled with **`/worldborder`** and applies **immediately** — **no server restart** is required. Run commands from the **server console** or as an **op** in-game (pick a quiet moment so players are not standing past the new edge).
