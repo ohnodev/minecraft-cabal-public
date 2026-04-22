@@ -71,6 +71,28 @@ Use [`scripts/mc-maintenance-restart.sh`](scripts/mc-maintenance-restart.sh) for
 sudo -E ./scripts/mc-maintenance-restart.sh
 ```
 
+### Manual graceful restart (copy/paste)
+
+Use this when you want an explicit, operator-visible restart flow without relying on the helper script:
+
+```bash
+cd /root/minecraft-cabal
+RCON_PASS="$(tr -d '\r\n' < server/.rcon-password)"
+
+# Optional player notice
+mcrcon -H 127.0.0.1 -P 25575 -p "$RCON_PASS" "say [Cabal SMP] Restart in 30 seconds for maintenance."
+sleep 30
+
+# Graceful save + stop
+mcrcon -H 127.0.0.1 -P 25575 -p "$RCON_PASS" "save-all flush"
+mcrcon -H 127.0.0.1 -P 25575 -p "$RCON_PASS" "stop"
+
+# Bring service back up
+docker compose up -d minecraft
+docker compose ps minecraft
+docker compose logs --tail=120 minecraft
+```
+
 ## World border
 
 Vanilla Minecraft has a built-in **world border** (no mods). It is controlled with **`/worldborder`** and applies **immediately** — **no server restart** is required. Run commands from the **server console** or as an **op** in-game (pick a quiet moment so players are not standing past the new edge).
