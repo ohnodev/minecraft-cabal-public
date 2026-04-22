@@ -20,6 +20,10 @@ if ! command -v docker >/dev/null 2>&1; then
   echo "error: docker not found." >&2
   exit 1
 fi
+if ! docker compose version >/dev/null 2>&1; then
+  echo "error: docker compose not available; please install Docker Compose or enable the Docker Compose plugin." >&2
+  exit 1
+fi
 
 if [[ -z "${RCON_PASSWORD:-}" ]] && [[ -f "${RCON_PASSWORD_FILE}" ]]; then
   RCON_PASSWORD="$(tr -d '\r\n' < "${RCON_PASSWORD_FILE}")"
