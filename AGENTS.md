@@ -47,8 +47,10 @@ Requirements:
                loaded = json.loads(p.read_text())
                if isinstance(loaded, list):
                    ops = loaded
+               else:
+                   raise SystemExit("ops.json must contain a JSON array")
            except json.JSONDecodeError:
-               ops = []
+               raise SystemExit(f"Failed to parse {p}; refusing to overwrite existing ops.json")
        already_exists = any(
            isinstance(op, dict) and (
                op.get("uuid") == op_uuid or op.get("name") == op_name
@@ -100,7 +102,7 @@ Requirements:
 
 9) Verification
    - docker compose ps minecraft should be Up
-   - ss -lnt should show 0.0.0.0:25565 (published by Docker)
+   - ss -lnt should show either 0.0.0.0:25565 or :::25565 (published by Docker)
    - ss -lnu should show *:19132 (bedrock/geyser)
    - ufw status verbose should include 22/tcp, 25565/tcp, 19132/udp
    - docker compose logs --tail=200 minecraft should show normal startup and no persistent bedrock pipeline exceptions
