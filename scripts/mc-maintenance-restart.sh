@@ -88,8 +88,37 @@ wait_for_rcon() {
   return 1
 }
 
+service_running() {
+  local services
+  services="$(cd "${REPO_ROOT}" && docker compose ps --status running --services "${MC_COMPOSE_SERVICE}" 2>/dev/null || true)"
+  [[ "${services}" == *"${MC_COMPOSE_SERVICE}"* ]]
+}
+
+show_service_logs() {
+  (cd "${REPO_ROOT}" && docker compose logs --tail=200 "${MC_COMPOSE_SERVICE}") >&2 || true
+}
+
+restart_service_hard() {
+  echo "[warn] Forcing docker compose restart for ${MC_COMPOSE_SERVICE}..."
+  if ! (cd "${REPO_ROOT}" && docker compose restart "${MC_COMPOSE_SERVICE}"); then
+    echo "error: forced restart failed for ${MC_COMPOSE_SERVICE}" >&2
+    show_service_logs
+    return 1
+  fi
+  if ! wait_for_rcon 120; then
+    echo "error: RCON did not recover after forced restart." >&2
+    show_service_logs
+    return 1
+  fi
+  return 0
+}
+
 echo "[info] Maintenance window (docker service: ${MC_COMPOSE_SERVICE})"
-wait_for_rcon 30
+if ! wait_for_rcon 30; then
+  echo "error: RCON is not reachable before maintenance; aborting countdown." >&2
+  show_service_logs
+  exit 1
+fi
 
 broadcast "§cScheduled maintenance: server restart in 2 minutes. Please reach a safe place."
 sleep 60
@@ -107,11 +136,24 @@ echo "[info] Stopping via RCON..."
 mcr "stop" || true
 sleep 6
 
+if service_running; then
+  if ! restart_service_hard; then
+    exit 1
+  fi
+fi
+
 echo "[info] Starting Docker service..."
-(cd "${REPO_ROOT}" && docker compose up -d "${MC_COMPOSE_SERVICE}")
+if ! (cd "${REPO_ROOT}" && docker compose up -d "${MC_COMPOSE_SERVICE}"); then
+  echo "error: docker compose up failed for ${MC_COMPOSE_SERVICE}" >&2
+  show_service_logs
+  exit 1
+fi
 
 if ! wait_for_rcon 120; then
-  echo "[warn] RCON not reachable after restart window." >&2
+  echo "[warn] RCON not reachable after docker compose up; trying forced restart..." >&2
+  if ! restart_service_hard; then
+    exit 1
+  fi
 fi
 
 broadcast "§aMaintenance complete. Thank you for your patience."

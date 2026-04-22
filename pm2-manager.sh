@@ -169,7 +169,14 @@ case "${1:-help}" in
   init) init ;;
   start) start ;;
   stop) stop ;;
-  restart) restart ;;
+  restart)
+    if [[ -n "${2:-}" ]]; then
+      log_err "Invalid target for restart: ${2}"
+      log_err "Usage: $0 restart"
+      exit 1
+    fi
+    restart
+    ;;
   status) status ;;
   logs) logs_cmd "${2:-100}" ;;
   clean-logs) clean_logs ;;

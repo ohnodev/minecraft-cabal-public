@@ -31,7 +31,7 @@ docker compose up -d --build minecraft
 docker compose logs -f minecraft
 ```
 
-Compose bind-mounts **`./server`** and uses the same **`scripts/start.sh`** entrypoint. In Docker, **`MC_BIND_MODE=public`** (set in **`docker-compose.yml`**) makes the server listen on **all interfaces** on **`MC_SERVER_PORT`** (default **25565**). Heap defaults to **4G** in Compose; override with **`MC_MIN_MEM`** / **`MC_MAX_MEM`**. Full options: **[`docker/README.md`](docker/README.md)**.
+Compose bind-mounts **`./server`** and uses the same **`scripts/start.sh`** entrypoint. The server listens on **all interfaces** on **`MC_SERVER_PORT`** (default **25565**). Heap defaults to **4G** in Compose; override with **`MC_MIN_MEM`** / **`MC_MAX_MEM`**. Full options: **[`docker/README.md`](docker/README.md)**.
 
 `scripts/start.sh` enforces runtime properties (`enable-rcon=true`, `rcon.port`, `server-port`) and injects `rcon.password` from **`RCON_PASSWORD`** if set, otherwise from **`server/.rcon-password`**. It renders runtime `server/server.properties` from tracked `server/server.properties.template`, so secrets and live overrides do not modify tracked files.
 
@@ -60,7 +60,7 @@ JVM heap is **8 GB** (`scripts/start.sh`). `view-distance` and `simulation-dista
 
 ### Scheduled restart with in-game warnings (RCON)
 
-Use [`scripts/mc-maintenance-restart.sh`](scripts/mc-maintenance-restart.sh) only if you also update that script for Docker. In the current Docker-only runtime, use a manual maintenance restart: broadcast countdown via RCON, run `save-all` + `stop`, then `docker compose up -d minecraft`. Requires **[mcrcon](https://github.com/Tiiffi/mcrcon)** on the host.
+Use [`scripts/mc-maintenance-restart.sh`](scripts/mc-maintenance-restart.sh) for scheduled Docker maintenance restarts with in-game countdown + graceful stop/start. Requires **[mcrcon](https://github.com/Tiiffi/mcrcon)** on the host. Direct `docker compose restart minecraft` remains a valid manual alternative when you do not need countdown broadcasts.
 
 **RCON in `server/server.properties.template`:** keep **`enable-rcon=true`** and **`rcon.port=25575`**. The runtime `rcon.password` is injected by `scripts/start.sh` from `server/.rcon-password` at boot, and the Docker runtime publishes RCON on the configured host port (default `25575`). **Restart Minecraft** after changing RCON so it starts listening.
 
@@ -314,7 +314,28 @@ A snapshot of the pre-Fabric runtime is stored in `backups/pre-fabric-snapshot-*
 
 ## Operator (admin)
 
-Edit `/root/minecraft-cabal/server/ops.json` while the server is **stopped**, using your exact username and UUID from a lookup site, then start the server. Or have an existing op run `/op YourName` in-game.
+`server/ops.json` is runtime-only and not committed. Start from the checked-in template and populate with environment-specific values:
+
+```bash
+cp /root/minecraft-cabal/server/ops.example.json /root/minecraft-cabal/server/ops.json
+```
+
+Or generate from env/secrets during provisioning:
+
+```bash
+export MC_OP_NAME="your-op-name"
+export MC_OP_UUID="your-op-uuid"
+python3 - <<'PY'
+import json, os, pathlib
+p = pathlib.Path("/root/minecraft-cabal/server/ops.json")
+p.write_text(json.dumps([{
+    "uuid": os.environ["MC_OP_UUID"],
+    "name": os.environ["MC_OP_NAME"],
+    "level": 4,
+    "bypassesPlayerLimit": False
+}], indent=2) + "\n")
+PY
+```
 
 ## Server Code of Conduct
 
@@ -347,7 +368,7 @@ docker compose logs -f minecraft
 # PM2 helper (includes API-focused workflows)
 cd /root/minecraft-cabal
 ./pm2-manager.sh start
-./pm2-manager.sh restart api
+./pm2-manager.sh restart
 ./pm2-manager.sh status
 ```
 
@@ -418,7 +439,7 @@ cd web && npm run deploy
 cd web && npm run dev
 ```
 
-### PM2 manager (API + Minecraft restart helpers)
+### PM2 manager (API only)
 
 The repo includes a dedicated manager for the API process only:
 
@@ -427,24 +448,17 @@ cd /root/minecraft-cabal
 ./pm2-manager.sh init
 ./pm2-manager.sh start
 ./pm2-manager.sh restart
-./pm2-manager.sh restart api
-./pm2-manager.sh restart api-with-deps
-./pm2-manager.sh restart minecraft
-./pm2-manager.sh restart-all
 ./pm2-manager.sh status
 ./pm2-manager.sh logs 100
 ```
 
 - PM2 process name: `cabal-smp-api`
-- Minecraft runtime: Docker Compose service `minecraft`
 - Ecosystem file: `/root/minecraft-cabal/ecosystem.config.js`
 - Log folder: `/root/minecraft-cabal/logs`
 - `restart` clears API logs, rebuilds `api/`, and starts clean
-- `restart api` is API-only (no mod rebuild, no Minecraft restart)
-- `restart api-with-deps` rebuilds/deploys repo mods, restarts Minecraft, then restarts API
-- `restart minecraft` is legacy and should be replaced by `docker compose restart minecraft`
-- `restart-all` restarts Minecraft first, then performs a full API restart
 - `init` ensures ecosystem config exists and configures `pm2-logrotate`
+- Minecraft control is intentionally out of scope for PM2 manager. Use Docker directly:
+  - `cd /root/minecraft-cabal && docker compose restart minecraft`
 
 ## Economy + Marketplace mod mode
 

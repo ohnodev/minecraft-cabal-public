@@ -58,6 +58,8 @@ resource-pack=https\://raw.githubusercontent.com/ohnodev/minecraft-cabal-resourc
 resource-pack-id=d0e48c7b-f849-451e-a73e-8a6bc13497bc
 resource-pack-prompt={"text"\:"This server uses a small resource pack for custom item icons (Land Tickets + Evoker Eye).","color"\:"yellow"}
 resource-pack-sha1=902f89f1b8101ba59297746f2f9eba1c98edca94
+# Note: scripts/start.sh rewrites server-ip/server-port at runtime.
+# Keep template values as sane Docker defaults; runtime env still wins.
 server-ip=0.0.0.0
 server-port=25565
 simulation-distance=7

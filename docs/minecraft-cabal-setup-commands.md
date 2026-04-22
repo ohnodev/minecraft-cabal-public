@@ -24,6 +24,22 @@ This is a cleaned, reproducible command sequence for server setup and networking
 - `java -version` (must be Java 21+)
 - `openssl rand -base64 32 > /root/minecraft-cabal/server/.rcon-password`
 - `chmod 600 /root/minecraft-cabal/server/.rcon-password`
+- `cp /root/minecraft-cabal/server/ops.example.json /root/minecraft-cabal/server/ops.json`
+- (optional env-driven op bootstrap)
+  ```bash
+  export MC_OP_NAME="your-op-name"
+  export MC_OP_UUID="your-op-uuid"
+  python3 - <<'PY'
+  import json, os, pathlib
+  p = pathlib.Path("/root/minecraft-cabal/server/ops.json")
+  p.write_text(json.dumps([{
+      "uuid": os.environ["MC_OP_UUID"],
+      "name": os.environ["MC_OP_NAME"],
+      "level": 4,
+      "bypassesPlayerLimit": False
+  }], indent=2) + "\n")
+  PY
+  ```
 - `curl -fL "https://maven.fabricmc.net/net/fabricmc/fabric-installer/1.1.1/fabric-installer-1.1.1.jar" -o /root/minecraft-cabal/server/fabric-installer.jar` (use current installer version, 1.1.1+)
 - `ls -lh /root/minecraft-cabal/server/fabric-installer.jar` (verify file exists at exact path before install)
 - `java -jar /root/minecraft-cabal/server/fabric-installer.jar server -mcversion 1.21.11 -loader 0.19.2 -downloadMinecraft -dir /root/minecraft-cabal/server`

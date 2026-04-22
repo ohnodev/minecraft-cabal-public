@@ -30,6 +30,19 @@ Requirements:
 
 4) Minecraft runtime files
    - Ensure /root/minecraft-cabal/server/.rcon-password exists (create secure random value if missing, chmod 600)
+   - Ensure /root/minecraft-cabal/server/ops.json exists from env-specific values (do not commit runtime ops.json):
+     - export MC_OP_NAME="your-op-name"
+     - export MC_OP_UUID="your-op-uuid"
+     - python3 - <<'PY'
+       import json, os, pathlib
+       p = pathlib.Path("/root/minecraft-cabal/server/ops.json")
+       p.write_text(json.dumps([{
+           "uuid": os.environ["MC_OP_UUID"],
+           "name": os.environ["MC_OP_NAME"],
+           "level": 4,
+           "bypassesPlayerLimit": False
+       }], indent=2) + "\n")
+       PY
    - Ensure Fabric server runtime exists in /root/minecraft-cabal/server (fabric-server-launch.jar/server.jar/libraries/.fabric)
    - If missing, download Fabric installer and run:
      java -jar /root/minecraft-cabal/server/fabric-installer.jar server -mcversion 1.21.11 -loader 0.19.2 -downloadMinecraft -dir /root/minecraft-cabal/server
@@ -60,7 +73,7 @@ Requirements:
      docker compose restart minecraft
 
 9) Verification
-   - docker compose ps minecraft should be Up/healthy
+   - docker compose ps minecraft should be Up
    - ss -lnt should show 0.0.0.0:25565 (published by Docker)
    - ss -lnu should show *:19132 (bedrock/geyser)
    - ufw status verbose should include 22/tcp, 25565/tcp, 19132/udp

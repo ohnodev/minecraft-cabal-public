@@ -47,7 +47,7 @@ export MC_MIN_MEM=8G MC_MAX_MEM=8G MC_HOST_PORT=25565
 docker compose up -d --build
 ```
 
-Inside the container the game listens on **`MC_SERVER_PORT`** (default **25565**) on all interfaces; **`scripts/start.sh`** uses **`MC_BIND_MODE=public`** (set by the image / compose) instead of the production nginx loopback layout.
+Inside the container the game listens on **`MC_SERVER_PORT`** (default **25565**) on all interfaces as enforced by `scripts/start.sh`.
 
 ## File ownership
 
