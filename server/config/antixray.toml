@@ -1,4 +1,7 @@
 # Default configuration file for Fabric AntiXray mod by DrexHD
+#
+# Overworld stays enabled. Engine 3 is strongest but has caused watchdog stalls
+# under heavy chunk + boss load; engine 2 is a middle ground (still strong).
 
 # Default values
 enabled = false
@@ -7,14 +10,11 @@ usePermission = false
 # World specific values
 [overworld]
 enabled = true
-# Mode 3 does heavy per-section work on chunk creation; under load (boss + joins) it can
-# blow the 60s watchdog when mixed with chunk gen. Mode 1 matches nether and is far cheaper.
-engineMode = 1
+engineMode = 2
 maxBlockHeight = 256
 updateRadius = 2
 lavaObscures = false
 skipEvokerBossChunks = true
-# Align with Cabal evoker arena (was 0,0 so skip never applied near the real boss chunks).
 evokerBossChunkX = -6
 evokerBossChunkZ = -6
 evokerBossChunkRadius = 8

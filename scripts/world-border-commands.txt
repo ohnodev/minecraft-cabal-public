@@ -1,22 +1,24 @@
 # Cabal SMP — world border (vanilla /worldborder)
 # No server restart. Run from server console or as op in-game.
-# Overworld: 20_000 block diameter (~10_000 block radius from center).
+# Overworld diameter: 20_000_000 blocks (~10_000_000 block radius from center).
+# Vanilla allows up to 59_999_968; this is within limits.
 
-# --- Overworld: stand at world spawn, then: ---
+# --- Overworld: stand at world spawn (or adjust center), then: ---
 /worldborder center ~ ~
-/worldborder set 20000
+/worldborder set 20000000
 /worldborder warning time 60
 
 # --- Nether: scale 1/8 vs overworld (diameter and center in block units) ---
-# Overworld diameter 20000 → Nether diameter 2500. Center = (spawn_x/8, spawn_z/8).
+# Overworld diameter 20_000_000 → Nether diameter 2_500_000.
+# Center = (spawn_x/8, spawn_z/8) for overworld spawn (spawn_x, spawn_z).
 # Example for overworld spawn at 0, 0:
 /execute in minecraft:the_nether run worldborder center 0 0
-/execute in minecraft:the_nether run worldborder set 2500
+/execute in minecraft:the_nether run worldborder set 2500000
 /execute in minecraft:the_nether run worldborder warning time 60
 
-# --- End: same block scale as overworld for main island (common setup); adjust if you use a custom hub) ---
+# --- End: same block scale as overworld (adjust center if you use a custom hub) ---
 /execute in minecraft:the_end run worldborder center 0 0
-/execute in minecraft:the_end run worldborder set 20000
+/execute in minecraft:the_end run worldborder set 20000000
 /execute in minecraft:the_end run worldborder warning time 60
 
 # Verify (in each dimension as needed):

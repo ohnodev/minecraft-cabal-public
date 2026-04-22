@@ -5,7 +5,7 @@ Run the same Fabric tree as production: the container only supplies **Java 25** 
 ## Prerequisites
 
 - Docker Engine with Compose v2 (`docker compose`) and the **Docker daemon running** (`docker info` should succeed).
-- Under **`server/`**: `fabric-server-launch.jar`, `server.jar`, `libraries/`, `.fabric/` (from the Fabric installer), plus your **`mods/`** and config — same layout as a normal host install.
+- Under **`server/`**: `fabric-server-launch.jar`, `server.jar`, `libraries/`, `.fabric/` (from the Fabric installer), plus your **`mods/`** and config — same layout as a normal host install. **[Chunky](https://modrinth.com/mod/chunky)** (Fabric) ships in **`server/mods/`** for optional pre-generation (`/chunky` in-game).
 - **RCON**: either create **`server/.rcon-password`** (one line, gitignored) or set **`RCON_PASSWORD`** on the host before `docker compose up` (Compose passes it through; see **`docker/env.example`**). `start.sh` prefers **`RCON_PASSWORD`**, then the file. **Ports:** defaults publish Java on **`127.0.0.1:25566` → container `MC_SERVER_PORT`** (so nginx can own **:25565**) and RCON on **`127.0.0.1:25575` → `MC_RCON_PORT`** only. Override **`MC_HOST_BIND` / `MC_RCON_HOST_BIND`** only if you accept the security trade-offs.
 
 ## Typical workflow

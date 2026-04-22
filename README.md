@@ -126,13 +126,11 @@ docker compose logs --tail=120 minecraft
 
 Vanilla Minecraft has a built-in **world border** (no mods). It is controlled with **`/worldborder`** and applies **immediately** — **no server restart** is required. Run commands from the **server console** or as an **op** in-game (pick a quiet moment so players are not standing past the new edge).
 
-**Cabal SMP policy (overworld):** **10,000 block diameter** — about **5,000 blocks from world spawn to the border** along an axis (`/worldborder set 10000`).
-
-**Rough travel time (overworld, straight line, no boosts):** from spawn out to the border is ~5k blocks — on foot roughly **15–25 minutes**, sprinting roughly **12–18 minutes**. Crossing the full width through the center is ~10k blocks — on the order of **~35–45 minutes** walking.
+**Cabal SMP policy (overworld):** **20,000,000 block diameter** (vanilla allows up to **59,999,968**). That is intentionally huge for exploration; pair it with **[Chunky](https://modrinth.com/mod/chunky)** (Fabric jar in `server/mods/`) to **pre-generate** chunks so joins do not pay full generation cost on the main thread. Copy-paste border commands: `scripts/world-border-commands.txt`.
 
 **The End:** unchanged — **default vanilla** (stronghold portals, dragon, gateways). This repo does not lock or schedule the End.
 
-**Dimensions:** Overworld, Nether, and End each have their **own** border. In the **Nether**, one block equals **⅛** of an overworld block horizontally, so the border should be **scaled**: **Nether diameter = Overworld diameter ÷ 8**, and **Nether center (X, Z) = (Overworld spawn X ÷ 8, Overworld spawn Z ÷ 8)** so portals and coordinates line up. The **End** often uses the same block scale as the Overworld for the main island (many servers mirror overworld diameter and center on **0, 0**). Copy-paste values for a **10,000** overworld diameter: `scripts/world-border-commands.txt`.
+**Dimensions:** Overworld, Nether, and End each have their **own** border. In the **Nether**, one block equals **⅛** of an overworld block horizontally, so the border should be **scaled**: **Nether diameter = Overworld diameter ÷ 8**, and **Nether center (X, Z) = (Overworld spawn X ÷ 8, Overworld spawn Z ÷ 8)** so portals and coordinates line up. The **End** often uses the same block scale as the Overworld for the main island (many servers mirror overworld diameter and center on **0, 0**). Example values for a **20,000,000** overworld diameter are in `scripts/world-border-commands.txt` (run as op when players are not standing past the new edge).
 
 ## Land Claims, Trust, and Home Teleport
 
