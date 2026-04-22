@@ -17,7 +17,8 @@ This is a cleaned, reproducible command sequence for server setup and networking
 ## 2) Base packages
 
 - `sudo apt-get update`
-- `sudo apt-get install -y git curl ca-certificates openssl ufw python3 docker.io docker-compose-plugin`
+- `sudo apt-get install -y git curl ca-certificates openssl ufw mcrcon python3 docker.io docker-compose-plugin`
+- `command -v mcrcon`
 
 ## 3) Java and Fabric runtime
 
