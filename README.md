@@ -71,6 +71,18 @@ Use [`scripts/mc-maintenance-restart.sh`](scripts/mc-maintenance-restart.sh) for
 sudo -E ./scripts/mc-maintenance-restart.sh
 ```
 
+### Instant clean restart (no countdown)
+
+Use this for an immediate operator restart that still saves world state first:
+
+```bash
+cd /root/minecraft-cabal
+sudo -E ./scripts/mc-restart-now.sh
+```
+
+This script performs: `save-all flush` -> `stop` -> `docker compose up -d minecraft`.
+Keep `scripts/start.sh` — Docker uses it as the container entrypoint and runtime property renderer.
+
 ### Manual graceful restart (copy/paste)
 
 Use this when you want an explicit, operator-visible restart flow without relying on the helper script:
