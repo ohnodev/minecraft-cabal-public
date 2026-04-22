@@ -7,14 +7,17 @@ usePermission = false
 # World specific values
 [overworld]
 enabled = true
-engineMode = 3
+# Mode 3 does heavy per-section work on chunk creation; under load (boss + joins) it can
+# blow the 60s watchdog when mixed with chunk gen. Mode 1 matches nether and is far cheaper.
+engineMode = 1
 maxBlockHeight = 256
 updateRadius = 2
 lavaObscures = false
 skipEvokerBossChunks = true
-evokerBossChunkX = 0
-evokerBossChunkZ = 0
-evokerBossChunkRadius = 4
+# Align with Cabal evoker arena (was 0,0 so skip never applied near the real boss chunks).
+evokerBossChunkX = -6
+evokerBossChunkZ = -6
+evokerBossChunkRadius = 8
 hiddenBlocks = ["#c:ores", "raw_copper_block", "raw_iron_block", "raw_gold_block", "!#antixray:hidden_only_ores"]
 replacementBlocks = ["#antixray:hidden_only_ores", "stone", "deepslate", "andesite", "calcite", "diorite", "dirt", "granite", "gravel", "sand", "tuff", "mossy_cobblestone", "obsidian", "clay", "infested_stone", "amethyst_block", "budding_amethyst", "chest"]
 
