@@ -23,7 +23,8 @@ This is a cleaned, reproducible command sequence for server setup and networking
     - `sudo apt-get install -y mcrcon`
   - If apt package is unavailable on your distro:
     - `sudo apt-get install -y build-essential`
-    - `git clone https://github.com/Tiiffi/mcrcon /tmp/mcrcon-src`
+    - `if [ -d /tmp/mcrcon-src ]; then rm -rf /tmp/mcrcon-src; fi`
+    - `git clone --depth 1 --branch v0.7.2 https://github.com/Tiiffi/mcrcon /tmp/mcrcon-src`
     - `make -C /tmp/mcrcon-src`
     - `sudo install -m 0755 /tmp/mcrcon-src/mcrcon /usr/local/bin/mcrcon`
 - `command -v mcrcon`
