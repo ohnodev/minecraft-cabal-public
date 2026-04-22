@@ -17,27 +17,52 @@ This is a cleaned, reproducible command sequence for server setup and networking
 ## 2) Base packages
 
 - `sudo apt-get update`
-- `sudo apt-get install -y git curl ca-certificates openssl ufw docker.io docker-compose-plugin`
+- `sudo apt-get install -y git curl ca-certificates openssl ufw python3 docker.io docker-compose-plugin`
 
 ## 3) Java and Fabric runtime
 
 - `java -version` (must be Java 21+)
 - `openssl rand -base64 32 > /root/minecraft-cabal/server/.rcon-password`
 - `chmod 600 /root/minecraft-cabal/server/.rcon-password`
-- `cp /root/minecraft-cabal/server/ops.example.json /root/minecraft-cabal/server/ops.json`
+- `[ -f /root/minecraft-cabal/server/ops.json ] || cp /root/minecraft-cabal/server/ops.example.json /root/minecraft-cabal/server/ops.json`
 - (optional env-driven op bootstrap)
   ```bash
   export MC_OP_NAME="your-op-name"
   export MC_OP_UUID="your-op-uuid"
   python3 - <<'PY'
-  import json, os, pathlib
+  import json, os, pathlib, tempfile
+  op_name = os.environ.get("MC_OP_NAME", "").strip()
+  op_uuid = os.environ.get("MC_OP_UUID", "").strip()
+  if not op_name or not op_uuid:
+      raise SystemExit("MC_OP_NAME and MC_OP_UUID must be set and non-empty")
   p = pathlib.Path("/root/minecraft-cabal/server/ops.json")
-  p.write_text(json.dumps([{
-      "uuid": os.environ["MC_OP_UUID"],
-      "name": os.environ["MC_OP_NAME"],
-      "level": 4,
-      "bypassesPlayerLimit": False
-  }], indent=2) + "\n")
+  ops = []
+  if p.exists():
+      try:
+          loaded = json.loads(p.read_text())
+          if isinstance(loaded, list):
+              ops = loaded
+      except json.JSONDecodeError:
+          ops = []
+  already_exists = any(
+      isinstance(op, dict) and (
+          op.get("uuid") == op_uuid or op.get("name") == op_name
+      )
+      for op in ops
+  )
+  if not already_exists:
+      ops.append({
+          "uuid": op_uuid,
+          "name": op_name,
+          "level": 4,
+          "bypassesPlayerLimit": False
+      })
+  with tempfile.NamedTemporaryFile("w", delete=False, dir=str(p.parent), encoding="utf-8") as tmp:
+      json.dump(ops, tmp, indent=2)
+      tmp.write("\n")
+      tmp_path = pathlib.Path(tmp.name)
+  tmp_path.replace(p)
+  print("ops.json updated:", p)
   PY
   ```
 - `curl -fL "https://maven.fabricmc.net/net/fabricmc/fabric-installer/1.1.1/fabric-installer-1.1.1.jar" -o /root/minecraft-cabal/server/fabric-installer.jar` (use current installer version, 1.1.1+)
