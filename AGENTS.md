@@ -22,8 +22,15 @@ Requirements:
 
 2) Install packages
    - apt-get update
-   - apt-get install -y git curl ca-certificates openssl ufw mcrcon python3 docker.io docker-compose-plugin
-   - Verify maintenance tooling is available: command -v mcrcon
+   - apt-get install -y git curl ca-certificates openssl ufw python3 docker.io docker-compose-plugin
+   - Install RCON CLI (`mcrcon`) with distro-aware fallback:
+     - if apt has `mcrcon`: `apt-get install -y mcrcon`
+     - else build from source:
+       - `apt-get install -y build-essential`
+       - `git clone https://github.com/Tiiffi/mcrcon /tmp/mcrcon-src`
+       - `make -C /tmp/mcrcon-src`
+       - `install -m 0755 /tmp/mcrcon-src/mcrcon /usr/local/bin/mcrcon`
+   - Verify maintenance tooling is available: `command -v mcrcon`
 
 3) Java
    - Verify java -version (must be 21+)

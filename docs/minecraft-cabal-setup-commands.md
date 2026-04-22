@@ -17,7 +17,15 @@ This is a cleaned, reproducible command sequence for server setup and networking
 ## 2) Base packages
 
 - `sudo apt-get update`
-- `sudo apt-get install -y git curl ca-certificates openssl ufw mcrcon python3 docker.io docker-compose-plugin`
+- `sudo apt-get install -y git curl ca-certificates openssl ufw python3 docker.io docker-compose-plugin`
+- Install `mcrcon`:
+  - If available in apt:
+    - `sudo apt-get install -y mcrcon`
+  - If apt package is unavailable on your distro:
+    - `sudo apt-get install -y build-essential`
+    - `git clone https://github.com/Tiiffi/mcrcon /tmp/mcrcon-src`
+    - `make -C /tmp/mcrcon-src`
+    - `sudo install -m 0755 /tmp/mcrcon-src/mcrcon /usr/local/bin/mcrcon`
 - `command -v mcrcon`
 
 ## 3) Java and Fabric runtime
