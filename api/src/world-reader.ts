@@ -8,6 +8,13 @@ import { fileURLToPath } from "url";
 const API_PACKAGE_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 /** `<repo>/server` when `MC_SERVER_DIR` is unset (portable; not a host-specific absolute path). */
 const DEFAULT_MC_SERVER_DIR = path.resolve(API_PACKAGE_ROOT, "..", "server");
+/** Trim env and treat empty/whitespace as unset so fallback is reliable. */
+const NORMALIZED_MC_SERVER_DIR = (() => {
+  const raw = process.env.MC_SERVER_DIR;
+  if (!raw) return DEFAULT_MC_SERVER_DIR;
+  const trimmed = raw.trim();
+  return trimmed.length > 0 ? trimmed : DEFAULT_MC_SERVER_DIR;
+})();
 
 const DIMENSION_KEY = (process.env.MAP_DIMENSION ?? process.env.MC_DIMENSION ?? "overworld").trim().toLowerCase();
 /**
@@ -17,7 +24,7 @@ const DIMENSION_KEY = (process.env.MAP_DIMENSION ?? process.env.MC_DIMENSION ?? 
  * that only when the vanilla path is missing.
  */
 const REGION_SUBPATH = (() => {
-  const serverDir = process.env.MC_SERVER_DIR ?? DEFAULT_MC_SERVER_DIR;
+  const serverDir = NORMALIZED_MC_SERVER_DIR;
   const tryDim = (vanilla: string, alt: string): string => {
     const v = path.join(serverDir, vanilla);
     const a = path.join(serverDir, alt);
@@ -41,21 +48,21 @@ const REGION_SUBPATH = (() => {
 })();
 
 const REGION_DIR = path.resolve(
-  process.env.MC_SERVER_DIR ?? DEFAULT_MC_SERVER_DIR,
+  NORMALIZED_MC_SERVER_DIR,
   REGION_SUBPATH
 );
 
 const LEVEL_DAT = path.resolve(
-  process.env.MC_SERVER_DIR ?? DEFAULT_MC_SERVER_DIR,
+  NORMALIZED_MC_SERVER_DIR,
   "world/level.dat"
 );
 
 const CLAIMS_PATH = path.resolve(
-  process.env.MC_SERVER_DIR ?? DEFAULT_MC_SERVER_DIR,
+  NORMALIZED_MC_SERVER_DIR,
   "claims.json"
 );
 const SERVER_PROPERTIES_PATH = path.resolve(
-  process.env.MC_SERVER_DIR ?? DEFAULT_MC_SERVER_DIR,
+  NORMALIZED_MC_SERVER_DIR,
   "server.properties"
 );
 

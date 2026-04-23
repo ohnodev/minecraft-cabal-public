@@ -1,10 +1,10 @@
 {
   "_comment": "Cabal SMP user config. Set babyCreeper.spawnChance to 0.0 to disable baby creepers. Set evoker.enabled to false to disable the evoker boss + its eyes, arrows, and wing systems. HUD colors use Minecraft formatting codes; &-prefixed codes are translated automatically (e.g. &b&l). bundle_safeguard: server-side bundle mitigations (cabal-claim); set both false to restore vanilla bundle crafting/open (see README).",
   "babyCreeper": {
-    "spawnChance": 0.30
+    "spawnChance": 0.3
   },
   "evoker": {
-    "enabled": false
+    "enabled": true
   },
   "server": {
     "name": "Cabal SMP",
@@ -20,8 +20,8 @@
       "money": "$",
       "kills": "\u2726",
       "deaths": "\u2620",
-      "playtime": "\u231B",
-      "ping": "\u26A1"
+      "playtime": "\u231b",
+      "ping": "\u26a1"
     },
     "colors": {
       "money": "a",
