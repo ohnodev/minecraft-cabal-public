@@ -62,9 +62,9 @@ JVM heap is **8 GB** (`scripts/start.sh`). `view-distance` and `simulation-dista
 
 Use [`scripts/mc-maintenance-restart.sh`](scripts/mc-maintenance-restart.sh) for scheduled Docker maintenance restarts with in-game countdown + graceful stop/start. Requires **[mcrcon](https://github.com/Tiiffi/mcrcon)** on the host. Direct `docker compose restart minecraft` remains a valid manual alternative when you do not need countdown broadcasts.
 
-**RCON in `server/server.properties.template`:** keep **`enable-rcon=true`** and **`rcon.port=25575`**. The runtime `rcon.password` is injected by `scripts/start.sh` from `server/.rcon-password` at boot. Compose publishes RCON on **`127.0.0.1:25575`** by default (host-only — use **`mcrcon -H 127.0.0.1`**). **Restart Minecraft** after changing RCON so it starts listening.
+**RCON in `server/server.properties.template`:** keep **`enable-rcon=true`** and **`rcon.port=25575`**. The runtime `rcon.password` is written by **`scripts/start.sh`** at boot: it prefers **`RCON_PASSWORD`**, else reads **`server/.rcon-password`** (one line, gitignored). If you use the file, create it on the host **before** starting or restarting Minecraft, owned by the user that runs the service (e.g. the same UID as the container’s `user:` if you set one in Compose), and set restrictive permissions with **`chmod 0600 server/.rcon-password`** so only that user can read the secret. Otherwise **`start.sh`** has no valid password to inject. Compose publishes RCON on **`127.0.0.1:25575`** by default (host-only — use **`mcrcon -H 127.0.0.1`**). **Restart Minecraft** after changing `enable-rcon`, `rcon.port`, the password, or the password file so the server reloads the listener and `rcon.password`.
 
-**For the script:** put the **same** secret in **`server/.rcon-password`** (one line; gitignored), e.g. copy the value from `rcon.password=`, or export **`RCON_PASSWORD`**. See **`server/.rcon-password.example`**.
+**For the script:** put the **same** secret in **`server/.rcon-password`**, e.g. copy the value from `rcon.password=`, or export **`RCON_PASSWORD`**. See **`server/.rcon-password.example`**.
 
 ```bash
 # Restart only (countdown + graceful cycle)
@@ -213,6 +213,10 @@ A single, user-friendly JSON file at `server/cabal-config.json` lets server owne
   "evoker": {
     "enabled": true
   },
+  "bundle_safeguard": {
+    "disable_crafting": true,
+    "block_right_click_open": true
+  },
   "server": {
     "name": "Cabal SMP",
     "colorCodes": "&b&l"
@@ -246,11 +250,14 @@ A single, user-friendly JSON file at `server/cabal-config.json` lets server owne
 | `hud.titleOverride` | When non-empty, replaces the computed `colorCodes + name` title with a custom string (useful for multi-color titles). Set to `""` or `null` to fall back to the computed title. |
 | `hud.icons.*` | Glyph shown before each HUD line label. Any printable character (e.g. `$`, `✦`, `♥`). |
 | `hud.colors.*` | Single-character Minecraft color code applied to the icon/value on each HUD line (`a` green, `c` light red, `4` dark red, `b` aqua, `e` yellow, etc.). |
+| `bundle_safeguard.disable_crafting` | **(cabal-claim)** When `true` (default), the server removes the `minecraft:bundle` result from the crafting output (2x2 and 3x3), so players cannot craft new bundles. |
+| `bundle_safeguard.block_right_click_open` | **(cabal-claim)** When `true` (default), right-clicking a bundle in-hand to open it is blocked (throttled chat message). Set to `false` if you only want to allow opening existing bundles while keeping crafting disabled. |
 
 **Notes**
 - Missing or malformed keys fall back to the defaults shown above; the loader never silently deletes user keys it does not recognize, so adding future Cabal fields is non-destructive.
 - `server/cabal-config.json` is tracked in the repo as the default template (same pattern as `server/economy-config.json`). If the file is ever deleted at runtime, the `cabal-mobs` mod rewrites defaults on next start.
 - Disabling the evoker also stops spawning Evoker's Eyes, so any in-world eyes become cosmetic — a deliberate consequence of disabling the full evoker system.
+- **Bundle safeguard (optional workaround):** Some clients behind Via can disconnect with `Packet Type: CUSTOM_PAYLOAD` when interacting with bundles. The **cabal-claim** mod can block bundle **crafting** and **right-click open** (see `bundle_safeguard` above). If issues persist for a player who still has bundles in their inventory, remove or store those items (e.g. creative op or playerdata edit) or set `block_right_click_open` to `false` and test. **Verification:** set `disable_crafting` / `block_right_click_open` as needed, restart, then craft string+leather (result should stay empty) and right-click a bundle (should be blocked when `true`); watch `logs/latest.log` for the prior Via disconnect pattern.
 
 ## Building the claim mod
 
@@ -260,7 +267,7 @@ The claim mod pulls Fabric API **0.141.3+1.21.11** straight from the Fabric Mave
 cd /root/minecraft-cabal/claim-mod
 export JAVA_HOME=/usr/lib/jvm/java-25-openjdk-amd64
 ./gradlew build
-cp build/libs/cabal-claim-1.3.3.jar ../server/mods/
+cp build/libs/cabal-claim-1.3.4.jar ../server/mods/
 cd /root/minecraft-cabal
 docker compose restart minecraft
 ```
@@ -316,7 +323,7 @@ The server uses **Fabric Loader 0.19.2** with **Fabric API 0.141.3+1.21.11**. Th
 | ViaBackwards | 5.9.0 | Downgrade support so older clients can join the newer 1.21.11 server |
 | Geyser-Fabric | 2.9.5-b1119 | Bedrock client listener on UDP **19132** |
 | Floodgate-Fabric | 2.2.6-b60 | Allows Bedrock players to join without a Java account |
-| cabal-claim | 1.3.3 | Land claims (`/claim`), `/home` teleport, land trust, auction/economy |
+| cabal-claim | 1.3.4 | Land claims (`/claim`), `/home` teleport, land trust, auction/economy, optional bundle safeguard |
 | cabal-mobs | 1.0.1 | Baby creepers and the minute-gated evoker boss |
 | cabal-elytra | 1.0.0 | Evoker's Wing progression, crafting hooks, and admin commands |
 
