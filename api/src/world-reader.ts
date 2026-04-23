@@ -2,6 +2,12 @@ import * as fs from "fs";
 import * as path from "path";
 import * as zlib from "zlib";
 import * as nbt from "prismarine-nbt";
+import { fileURLToPath } from "url";
+
+/** `api/` directory (sibling of repo `server/`, same as `API_ROOT` in `index.ts`). */
+const API_PACKAGE_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
+/** `<repo>/server` when `MC_SERVER_DIR` is unset (portable; not a host-specific absolute path). */
+const DEFAULT_MC_SERVER_DIR = path.resolve(API_PACKAGE_ROOT, "..", "server");
 
 const DIMENSION_KEY = (process.env.MAP_DIMENSION ?? process.env.MC_DIMENSION ?? "overworld").trim().toLowerCase();
 /**
@@ -11,7 +17,7 @@ const DIMENSION_KEY = (process.env.MAP_DIMENSION ?? process.env.MC_DIMENSION ?? 
  * that only when the vanilla path is missing.
  */
 const REGION_SUBPATH = (() => {
-  const serverDir = process.env.MC_SERVER_DIR ?? "/root/minecraft-cabal/server";
+  const serverDir = process.env.MC_SERVER_DIR ?? DEFAULT_MC_SERVER_DIR;
   const tryDim = (vanilla: string, alt: string): string => {
     const v = path.join(serverDir, vanilla);
     const a = path.join(serverDir, alt);
@@ -35,21 +41,21 @@ const REGION_SUBPATH = (() => {
 })();
 
 const REGION_DIR = path.resolve(
-  process.env.MC_SERVER_DIR ?? "/root/minecraft-cabal/server",
+  process.env.MC_SERVER_DIR ?? DEFAULT_MC_SERVER_DIR,
   REGION_SUBPATH
 );
 
 const LEVEL_DAT = path.resolve(
-  process.env.MC_SERVER_DIR ?? "/root/minecraft-cabal/server",
+  process.env.MC_SERVER_DIR ?? DEFAULT_MC_SERVER_DIR,
   "world/level.dat"
 );
 
 const CLAIMS_PATH = path.resolve(
-  process.env.MC_SERVER_DIR ?? "/root/minecraft-cabal/server",
+  process.env.MC_SERVER_DIR ?? DEFAULT_MC_SERVER_DIR,
   "claims.json"
 );
 const SERVER_PROPERTIES_PATH = path.resolve(
-  process.env.MC_SERVER_DIR ?? "/root/minecraft-cabal/server",
+  process.env.MC_SERVER_DIR ?? DEFAULT_MC_SERVER_DIR,
   "server.properties"
 );
 
