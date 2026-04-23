@@ -130,7 +130,7 @@ Vanilla Minecraft has a built-in **world border** (no mods). It is controlled wi
 
 **The End:** unchanged — **default vanilla** (stronghold portals, dragon, gateways). This repo does not lock or schedule the End.
 
-**Dimensions:** Overworld, Nether, and End each have their **own** border. In the **Nether**, one block equals **⅛** of an overworld block horizontally, so the border should be **scaled**: **Nether diameter = Overworld diameter ÷ 8**, and **Nether center (X, Z) = (Overworld spawn X ÷ 8, Overworld spawn Z ÷ 8)** so portals and coordinates line up. The **End** often uses the same block scale as the Overworld for the main island (many servers mirror overworld diameter and center on **0, 0**). Example values for a **20,000,000** overworld diameter are in `scripts/world-border-commands.txt` (run as op when players are not standing past the new edge).
+**Dimensions:** Overworld, Nether, and End each have their **own** border. In the **Nether**, one block equals **⅛** of an overworld block horizontally, so the border should be **scaled**: **Nether diameter = Overworld diameter ÷ 8**, and **Nether center (X, Z) = (Overworld spawn X ÷ 8, Overworld spawn Z ÷ 8)** so portals and coordinates line up. **Optionally,** the End can be set to **mirror** the Overworld border (same block scale, center on **0, 0**); that is **not** the default here — follow **Cabal policy and vanilla** for the End (unchanged, see above) unless you **deliberately** choose to align it. Example values for a **20,000,000** overworld diameter are in `scripts/world-border-commands.txt` (Nether scaling and optional End mirroring; run as op when players are not standing past the new edge).
 
 ## Land Claims, Trust, and Home Teleport
 

@@ -36,7 +36,7 @@ docker compose stop -t 90 minecraft
 | `MC_MIN_MEM`            | `4G`          | JVM `-Xms` (raise for production-like load)                           |
 | `MC_MAX_MEM`            | `4G`          | JVM `-Xmx`                                                              |
 
-**RCON and firewalls:** defaults keep RCON on **`127.0.0.1`** only (no WAN listener). For defense in depth if you ever change publish rules by mistake, you can add **`ufw deny 25575/tcp`** on the host so the port is never accepted from the internet.
+**RCON and firewalls:** defaults keep RCON on **`127.0.0.1`** only (no WAN listener). For defense in depth if you ever change publish rules accidentally, you can add **`ufw deny 25575/tcp`** on the host so the port is never accepted from the internet.
 
 Bedrock clients connect to **`MC_BEDROCK_HOST_PORT`** (UDP). Geyser-Fabric
 (`server/mods/geyser-fabric-*.jar`) provides the Bedrock listener, and
