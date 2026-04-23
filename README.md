@@ -6,7 +6,7 @@
 **Connect (Java):** `minecraft.thecabal.app` or `157.230.189.203` — port **25565** (default).  
 **Connect (Bedrock):** same hostname, UDP port **19132** — served in-process by Geyser-Fabric; Floodgate-Fabric lets Bedrock players skip a Java account.
 
-**How traffic flows:** Docker publishes Minecraft Java on **0.0.0.0:25565/tcp** and Bedrock on **0.0.0.0:19132/udp** from the `minecraft` service in `docker-compose.yml`. Geyser-Fabric and Floodgate run inside the same JVM/mod stack as Java. You still must expose/open **25565/tcp** and **19132/udp** at every network layer (Docker publishing, host firewall, cloud/VPS firewall/security group), or clients will time out.
+**How traffic flows:** By default, Compose publishes the Java listener on **`127.0.0.1:25566/tcp`** only and **RCON on `127.0.0.1:25575/tcp`** only; use **nginx `stream`** on the host to expose **25565/tcp** to players (see `deploy/nginx/03-mc-stream-rate-limit.conf`). Bedrock is on **`0.0.0.0:19132/udp`** unless you change it. Geyser-Fabric and Floodgate run inside the same JVM/mod stack as Java. Open **25565/tcp** (or your nginx front port) and **19132/udp** at the firewall / cloud security group, or clients will time out.
 
 Players connect with a **normal vanilla 1.21.11 client** (Java) — no mods needed on the client side. Modern **1.21.x clients** (1.21.x ≠ 1.21.11) are accepted through the Via translation stack (ViaFabric + ViaVersion + ViaBackwards). **Bedrock** clients connect through the Geyser + Floodgate mod pair running inside the Fabric server.
 
@@ -62,9 +62,9 @@ JVM heap is **8 GB** (`scripts/start.sh`). `view-distance` and `simulation-dista
 
 Use [`scripts/mc-maintenance-restart.sh`](scripts/mc-maintenance-restart.sh) for scheduled Docker maintenance restarts with in-game countdown + graceful stop/start. Requires **[mcrcon](https://github.com/Tiiffi/mcrcon)** on the host. Direct `docker compose restart minecraft` remains a valid manual alternative when you do not need countdown broadcasts.
 
-**RCON in `server/server.properties.template`:** keep **`enable-rcon=true`** and **`rcon.port=25575`**. The runtime `rcon.password` is injected by `scripts/start.sh` from `server/.rcon-password` at boot, and the Docker runtime publishes RCON on the configured host port (default `25575`). **Restart Minecraft** after changing RCON so it starts listening.
+**RCON in `server/server.properties.template`:** keep **`enable-rcon=true`** and **`rcon.port=25575`**. The runtime `rcon.password` is written by **`scripts/start.sh`** at boot: it prefers **`RCON_PASSWORD`**, else reads **`server/.rcon-password`** (one line, gitignored). If you use the file, create it on the host **before** starting or restarting Minecraft, owned by the user that runs the service (e.g. the same UID as the container’s `user:` if you set one in Compose), and set restrictive permissions with **`chmod 0600 server/.rcon-password`** so only that user can read the secret. Otherwise **`start.sh`** has no valid password to inject. Compose publishes RCON on **`127.0.0.1:25575`** by default (host-only — use **`mcrcon -H 127.0.0.1`**). **Restart Minecraft** after changing `enable-rcon`, `rcon.port`, the password, or the password file so the server reloads the listener and `rcon.password`.
 
-**For the script:** put the **same** secret in **`server/.rcon-password`** (one line; gitignored), e.g. copy the value from `rcon.password=`, or export **`RCON_PASSWORD`**. See **`server/.rcon-password.example`**.
+**For the script:** put the **same** secret in **`server/.rcon-password`**, e.g. copy the value from `rcon.password=`, or export **`RCON_PASSWORD`**. See **`server/.rcon-password.example`**.
 
 ```bash
 # Restart only (countdown + graceful cycle)
@@ -126,13 +126,11 @@ docker compose logs --tail=120 minecraft
 
 Vanilla Minecraft has a built-in **world border** (no mods). It is controlled with **`/worldborder`** and applies **immediately** — **no server restart** is required. Run commands from the **server console** or as an **op** in-game (pick a quiet moment so players are not standing past the new edge).
 
-**Cabal SMP policy (overworld):** **10,000 block diameter** — about **5,000 blocks from world spawn to the border** along an axis (`/worldborder set 10000`).
-
-**Rough travel time (overworld, straight line, no boosts):** from spawn out to the border is ~5k blocks — on foot roughly **15–25 minutes**, sprinting roughly **12–18 minutes**. Crossing the full width through the center is ~10k blocks — on the order of **~35–45 minutes** walking.
+**Cabal SMP policy (overworld):** **20,000,000 block diameter** (vanilla allows up to **59,999,968**). That is intentionally huge for exploration; pair it with **[Chunky](https://modrinth.com/mod/chunky)** (Fabric jar in `server/mods/`) to **pre-generate** chunks so joins do not pay full generation cost on the main thread. Copy-paste border commands: `scripts/world-border-commands.txt`.
 
 **The End:** unchanged — **default vanilla** (stronghold portals, dragon, gateways). This repo does not lock or schedule the End.
 
-**Dimensions:** Overworld, Nether, and End each have their **own** border. In the **Nether**, one block equals **⅛** of an overworld block horizontally, so the border should be **scaled**: **Nether diameter = Overworld diameter ÷ 8**, and **Nether center (X, Z) = (Overworld spawn X ÷ 8, Overworld spawn Z ÷ 8)** so portals and coordinates line up. The **End** often uses the same block scale as the Overworld for the main island (many servers mirror overworld diameter and center on **0, 0**). Copy-paste values for a **10,000** overworld diameter: `scripts/world-border-commands.txt`.
+**Dimensions:** Overworld, Nether, and End each have their **own** border. In the **Nether**, one block equals **⅛** of an overworld block horizontally, so the border should be **scaled**: **Nether diameter = Overworld diameter ÷ 8**, and **Nether center (X, Z) = (Overworld spawn X ÷ 8, Overworld spawn Z ÷ 8)** so portals and coordinates line up. **Optionally,** the End can be set to **mirror** the Overworld border (same block scale, center on **0, 0**); that is **not** the default here — follow **Cabal policy and vanilla** for the End (unchanged, see above) unless you **deliberately** choose to align it. Example values for a **20,000,000** overworld diameter are in `scripts/world-border-commands.txt` (Nether scaling and optional End mirroring; run as op when players are not standing past the new edge).
 
 ## Land Claims, Trust, and Home Teleport
 
@@ -215,6 +213,10 @@ A single, user-friendly JSON file at `server/cabal-config.json` lets server owne
   "evoker": {
     "enabled": true
   },
+  "bundle_safeguard": {
+    "disable_crafting": true,
+    "block_right_click_open": true
+  },
   "server": {
     "name": "Cabal SMP",
     "colorCodes": "&b&l"
@@ -248,11 +250,14 @@ A single, user-friendly JSON file at `server/cabal-config.json` lets server owne
 | `hud.titleOverride` | When non-empty, replaces the computed `colorCodes + name` title with a custom string (useful for multi-color titles). Set to `""` or `null` to fall back to the computed title. |
 | `hud.icons.*` | Glyph shown before each HUD line label. Any printable character (e.g. `$`, `✦`, `♥`). |
 | `hud.colors.*` | Single-character Minecraft color code applied to the icon/value on each HUD line (`a` green, `c` light red, `4` dark red, `b` aqua, `e` yellow, etc.). |
+| `bundle_safeguard.disable_crafting` | **(cabal-claim)** When `true` (default), the server removes the `minecraft:bundle` result from the crafting output (2x2 and 3x3), so players cannot craft new bundles. |
+| `bundle_safeguard.block_right_click_open` | **(cabal-claim)** When `true` (default), right-clicking a bundle in-hand to open it is blocked (throttled chat message). Set to `false` if you only want to allow opening existing bundles while keeping crafting disabled. |
 
 **Notes**
 - Missing or malformed keys fall back to the defaults shown above; the loader never silently deletes user keys it does not recognize, so adding future Cabal fields is non-destructive.
 - `server/cabal-config.json` is tracked in the repo as the default template (same pattern as `server/economy-config.json`). If the file is ever deleted at runtime, the `cabal-mobs` mod rewrites defaults on next start.
 - Disabling the evoker also stops spawning Evoker's Eyes, so any in-world eyes become cosmetic — a deliberate consequence of disabling the full evoker system.
+- **Bundle safeguard (optional workaround):** Some clients behind Via can disconnect with `Packet Type: CUSTOM_PAYLOAD` when interacting with bundles. The **cabal-claim** mod can block bundle **crafting** and **right-click open** (see `bundle_safeguard` above). If issues persist for a player who still has bundles in their inventory, remove or store those items (e.g. creative op or playerdata edit) or set `block_right_click_open` to `false` and test. **Verification:** set `disable_crafting` / `block_right_click_open` as needed, restart, then craft string+leather (result should stay empty) and right-click a bundle (should be blocked when `true`); watch `logs/latest.log` for the prior Via disconnect pattern.
 
 ## Building the claim mod
 
@@ -262,7 +267,7 @@ The claim mod pulls Fabric API **0.141.3+1.21.11** straight from the Fabric Mave
 cd /root/minecraft-cabal/claim-mod
 export JAVA_HOME=/usr/lib/jvm/java-25-openjdk-amd64
 ./gradlew build
-cp build/libs/cabal-claim-1.3.3.jar ../server/mods/
+cp build/libs/cabal-claim-1.3.4.jar ../server/mods/
 cd /root/minecraft-cabal
 docker compose restart minecraft
 ```
@@ -318,7 +323,7 @@ The server uses **Fabric Loader 0.19.2** with **Fabric API 0.141.3+1.21.11**. Th
 | ViaBackwards | 5.9.0 | Downgrade support so older clients can join the newer 1.21.11 server |
 | Geyser-Fabric | 2.9.5-b1119 | Bedrock client listener on UDP **19132** |
 | Floodgate-Fabric | 2.2.6-b60 | Allows Bedrock players to join without a Java account |
-| cabal-claim | 1.3.3 | Land claims (`/claim`), `/home` teleport, land trust, auction/economy |
+| cabal-claim | 1.3.4 | Land claims (`/claim`), `/home` teleport, land trust, auction/economy, optional bundle safeguard |
 | cabal-mobs | 1.0.1 | Baby creepers and the minute-gated evoker boss |
 | cabal-elytra | 1.0.0 | Evoker's Wing progression, crafting hooks, and admin commands |
 

@@ -59,7 +59,8 @@ apply_runtime_server_properties() {
 
   cp "${TEMPLATE_PROPERTIES_FILE}" "${RUNTIME_PROPERTIES_FILE}"
 
-  # Docker-only runtime: bind game + RCON on all interfaces.
+  # Docker-only runtime: server listens inside the container network namespace; host
+  # exposure (public vs loopback) is defined only in docker-compose.yml ports:.
   set_property "server-ip" "0.0.0.0" "${RUNTIME_PROPERTIES_FILE}"
   set_property "server-port" "${MC_SERVER_PORT:-25565}" "${RUNTIME_PROPERTIES_FILE}"
   set_property "enable-rcon" "true" "${RUNTIME_PROPERTIES_FILE}"

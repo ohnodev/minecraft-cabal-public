@@ -44,7 +44,7 @@ public final class EvokerBossConfig {
      * Vanilla default is 0.6; game maximum is 10.0. Large hitboxes need more or they snag on terrain;
      * this does not add Spider-style vertical wall climbing.
      */
-    public static final double BOSS_STEP_HEIGHT = 10.0;
+    public static final double BOSS_STEP_HEIGHT = 0.6;
     /** Max health multiplier relative to vanilla evoker defaults. */
     public static final double BOSS_HEALTH_MULTIPLIER = 70.0;
 
@@ -52,7 +52,7 @@ public final class EvokerBossConfig {
     public static final double BOSS_FALL_DAMAGE_MULTIPLIER = 0.0;
     public static final double BOSS_SAFE_FALL_DISTANCE = 4096.0;
     /** Higher target acquisition range so boss can engage distant players. */
-    public static final double BOSS_FOLLOW_RANGE = 160.0;
+    public static final double BOSS_FOLLOW_RANGE = 64.0;
 
     /**
      * Minimum real-world seconds between automatic spawn <em>attempts</em> (rolling window).

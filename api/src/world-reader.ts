@@ -2,40 +2,67 @@ import * as fs from "fs";
 import * as path from "path";
 import * as zlib from "zlib";
 import * as nbt from "prismarine-nbt";
+import { fileURLToPath } from "url";
+
+/** `api/` directory (sibling of repo `server/`, same as `API_ROOT` in `index.ts`). */
+const API_PACKAGE_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
+/** `<repo>/server` when `MC_SERVER_DIR` is unset (portable; not a host-specific absolute path). */
+const DEFAULT_MC_SERVER_DIR = path.resolve(API_PACKAGE_ROOT, "..", "server");
+/** Trim env and treat empty/whitespace as unset so fallback is reliable. */
+const NORMALIZED_MC_SERVER_DIR = (() => {
+  const raw = process.env.MC_SERVER_DIR;
+  if (!raw) return DEFAULT_MC_SERVER_DIR;
+  const trimmed = raw.trim();
+  return trimmed.length > 0 ? trimmed : DEFAULT_MC_SERVER_DIR;
+})();
 
 const DIMENSION_KEY = (process.env.MAP_DIMENSION ?? process.env.MC_DIMENSION ?? "overworld").trim().toLowerCase();
+/**
+ * Vanilla on-disk layout (Java Edition): main overworld is {@code world/region},
+ * Nether is {@code world/DIM-1/region}, End is {@code world/DIM1/region}.
+ * Some tools use {@code world/dimensions/minecraft/.../region}; if present, prefer
+ * that only when the vanilla path is missing.
+ */
 const REGION_SUBPATH = (() => {
+  const serverDir = NORMALIZED_MC_SERVER_DIR;
+  const tryDim = (vanilla: string, alt: string): string => {
+    const v = path.join(serverDir, vanilla);
+    const a = path.join(serverDir, alt);
+    if (fs.existsSync(v)) return vanilla;
+    if (fs.existsSync(a)) return alt;
+    return vanilla;
+  };
   switch (DIMENSION_KEY) {
     case "overworld":
     case "minecraft:overworld":
-      return "world/dimensions/minecraft/overworld/region";
+      return tryDim("world/region", "world/dimensions/minecraft/overworld/region");
     case "nether":
     case "minecraft:the_nether":
-      return "world/dimensions/minecraft/the_nether/region";
+      return tryDim("world/DIM-1/region", "world/dimensions/minecraft/the_nether/region");
     case "end":
     case "minecraft:the_end":
-      return "world/dimensions/minecraft/the_end/region";
+      return tryDim("world/DIM1/region", "world/dimensions/minecraft/the_end/region");
     default:
       throw new Error(`Unsupported map dimension: ${DIMENSION_KEY}`);
   }
 })();
 
 const REGION_DIR = path.resolve(
-  process.env.MC_SERVER_DIR ?? "/root/minecraft-cabal/server",
+  NORMALIZED_MC_SERVER_DIR,
   REGION_SUBPATH
 );
 
 const LEVEL_DAT = path.resolve(
-  process.env.MC_SERVER_DIR ?? "/root/minecraft-cabal/server",
+  NORMALIZED_MC_SERVER_DIR,
   "world/level.dat"
 );
 
 const CLAIMS_PATH = path.resolve(
-  process.env.MC_SERVER_DIR ?? "/root/minecraft-cabal/server",
+  NORMALIZED_MC_SERVER_DIR,
   "claims.json"
 );
 const SERVER_PROPERTIES_PATH = path.resolve(
-  process.env.MC_SERVER_DIR ?? "/root/minecraft-cabal/server",
+  NORMALIZED_MC_SERVER_DIR,
   "server.properties"
 );
 
